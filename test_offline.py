@@ -413,30 +413,21 @@ def test_scout_and_decide_skip():
 
 
 def test_upgrade_walls_low_resources():
-    print("\n>>> TEST: upgrade_walls() — resources below threshold")
+    print("\n>>> TEST: WallUpgradeStrategy — resources below threshold")
 
-    from unittest.mock import patch
+    from buildings import WallUpgradeStrategy
 
-    low_gold = 1_000_000
-    low_elixir = 500_000
-    dummy_img = np.zeros((1440, 2560, 3), dtype=np.uint8)
+    strategy = WallUpgradeStrategy()
 
-    with patch("walls.screenshot", return_value=dummy_img), \
-         patch("walls.read_resources_from_village", return_value=(low_gold, low_elixir)), \
-         patch("walls.tap") as mock_tap:
-        from walls import upgrade_walls
-        count = upgrade_walls()
-
-    if count == 0:
-        _pass("upgrade_walls() returned 0 (resources too low)")
+    if not strategy.should_upgrade(1_000_000, 500_000):
+        _pass("should_upgrade() returned False for low resources")
     else:
-        _fail(f"upgrade_walls() returned {count}, expected 0")
+        _fail("should_upgrade() should return False for low resources")
 
-    # Should not have tapped any walls
-    if not mock_tap.called:
-        _pass("No taps sent (correct — shouldn't try to upgrade)")
+    if strategy.should_upgrade(25_000_000, 500_000):
+        _pass("should_upgrade() returned True for high gold")
     else:
-        _fail(f"tap() was called {mock_tap.call_count} times (should be 0)")
+        _fail("should_upgrade() should return True for high gold")
 
 
 def test_ensure_on_village_already_there():

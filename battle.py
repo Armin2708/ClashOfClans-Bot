@@ -7,7 +7,8 @@ Flow:
 """
 
 import time
-from screen import screenshot, tap, swipe
+import logging
+from screen import screenshot, tap, swipe, wait_for_state, tap_and_verify
 from vision import (
     find_button, detect_screen_state, read_enemy_loot,
     get_deploy_corner, get_troop_slots, find_popup
@@ -19,51 +20,50 @@ from config import (
     DEPLOY_SWIPE_DURATION, DEPLOY_SWIPE_ROUNDS,
     FALLBACK_TROOP_SLOTS, FALLBACK_TROOP_X_START, FALLBACK_TROOP_X_SPACING,
 )
+from state_machine import GameState
+
+logger = logging.getLogger("coc.battle")
 
 
-_cached_buttons = {}
+def _find_button_fresh(button_name):
+    """Find a button via a fresh screenshot (no caching)."""
+    img = screenshot()
+    return find_button(img, button_name)
 
 
-def _find_and_cache(img, button_name):
-    """Find a button, cache its position for future use."""
-    if button_name in _cached_buttons:
-        return _cached_buttons[button_name]
+def _tap_button(button_name, expected_state=None, delay=2, verify_timeout=5):
+    """Find a button via fresh screenshot, tap it, and optionally verify state change."""
+    logger.debug("Taking screenshot to find %s...", button_name)
+    img = screenshot()
     pos = find_button(img, button_name)
-    if pos:
-        _cached_buttons[button_name] = pos
-        print(f"[Battle] Cached {button_name} at {pos}")
-    return pos
+    if not pos:
+        logger.warning("%s not found!", button_name)
+        return False
 
-
-def _get_button(button_name, delay=2):
-    """Find a button (cached or via screenshot), tap it, and return success."""
-    if button_name in _cached_buttons:
-        pos = _cached_buttons[button_name]
-        print(f"[Battle] Using cached {button_name} at {pos}")
+    if expected_state:
+        result = tap_and_verify(*pos, expected_state=expected_state, timeout=verify_timeout, delay=delay)
+        if result is None:
+            logger.warning("%s tapped but state didn't change to %s", button_name, expected_state)
+            return False
+        return True
     else:
-        print(f"[Battle] Taking screenshot to find {button_name}...")
-        img = screenshot()
-        pos = _find_and_cache(img, button_name)
-    if pos:
         tap(*pos, delay=delay)
         return True
-    print(f"[Battle] {button_name} not found!")
-    return False
 
 
 def enter_battle():
     """From village, navigate through Attack → Find a Match → Army → Start Battle."""
-    if not _get_button("attack_button", delay=2):
+    if not _tap_button("attack_button", delay=2):
         return False
-    if not _get_button("find_match", delay=2):
+    if not _tap_button("find_match", delay=2):
         return False
-    if not _get_button("start_battle", delay=3):
+    if not _tap_button("start_battle", delay=3):
         return False
 
     # Wait for clouds to clear (opponent found)
-    print("[Battle] Searching for opponent...")
+    logger.info("Searching for opponent...")
     if not wait_for_scout():
-        print("[Battle] Search timed out")
+        logger.warning("Search timed out")
         return False
 
     return True
@@ -75,11 +75,11 @@ def wait_for_scout(timeout=30):
     while time.time() - start < timeout:
         img = screenshot()
         state = detect_screen_state(img)
-        if state == "battle":
-            print("[Battle] Landed on enemy base (scouting)")
+        if state == GameState.SCOUTING:
+            logger.info("Landed on enemy base (scouting)")
             return True
-        if state == "in_battle":
-            print("[Battle] Landed directly in battle")
+        if state == GameState.BATTLE_ACTIVE:
+            logger.info("Landed directly in battle")
             return True
         time.sleep(2)
     return False
@@ -93,14 +93,14 @@ def scout_and_decide(img):
     Returns (True, None) if we attacked, (False, next_img) with fresh screenshot of next base.
     """
     gold, elixir = read_enemy_loot(img)
-    print(f"[Scout] Enemy loot — Gold: {gold}, Elixir: {elixir}")
+    logger.info("Enemy loot — Gold: %d, Elixir: %d", gold, elixir)
 
     if gold >= MIN_LOOT_TO_ATTACK or elixir >= MIN_LOOT_TO_ATTACK:
-        print(f"[Scout] Loot meets threshold ({MIN_LOOT_TO_ATTACK})! Attacking...")
+        logger.info("Loot meets threshold (%d)! Attacking...", MIN_LOOT_TO_ATTACK)
         deploy_troops(img)
         return True, None
     else:
-        print("[Scout] Loot too low, skipping to next base...")
+        logger.info("Loot too low, skipping to next base...")
         next_img = skip_base(img)
         return False, next_img
 
@@ -113,11 +113,15 @@ def skip_base(img):
     pos = find_button(img, "next_base")
     if pos:
         tap(*pos, delay=1)
-        time.sleep(SCOUT_WAIT)
-        print("[Scout] Taking screenshot of next base...")
+        # Poll for scouting state instead of fixed sleep
+        result = wait_for_state(GameState.SCOUTING, timeout=SCOUT_WAIT + 2, poll_interval=0.5)
+        if result is not None:
+            logger.debug("Next base loaded")
+            return result
+        logger.debug("Taking screenshot of next base...")
         return screenshot()
     else:
-        print("[Scout] Next button not found!")
+        logger.warning("Next button not found!")
         time.sleep(2)
         return screenshot()
 
@@ -125,7 +129,7 @@ def skip_base(img):
 def deploy_troops(img):
     """Select each troop slot and deploy all troops to the top corner."""
     # Swipe left to make sure the deploy zone (top-left corner) is accessible
-    print("[Deploy] Swiping left to expose deploy zone...")
+    logger.info("Swiping left to expose deploy zone...")
     swipe(DEPLOY_SWIPE_X1, DEPLOY_SWIPE_Y1, DEPLOY_SWIPE_X2, DEPLOY_SWIPE_Y2, DEPLOY_SWIPE_DURATION)
     time.sleep(0.5)
     swipe(DEPLOY_SWIPE_X1, DEPLOY_SWIPE_Y1, DEPLOY_SWIPE_X2, DEPLOY_SWIPE_Y2, DEPLOY_SWIPE_DURATION)
@@ -134,23 +138,23 @@ def deploy_troops(img):
     # Take a fresh screenshot after repositioning
     img = screenshot()
 
-    print("[Deploy] Detecting troop slots...")
+    logger.debug("Detecting troop slots...")
     troop_slots = get_troop_slots(img)
     deploy_points = get_deploy_corner(img)
 
     if not troop_slots:
-        print("[Deploy] No troop slots found! Using fallback...")
+        logger.warning("No troop slots found! Using fallback...")
         h, w = img.shape[:2]
         troop_slots = [
             (FALLBACK_TROOP_X_START + i * FALLBACK_TROOP_X_SPACING, int(h * TROOP_BAR_Y_RATIO))
             for i in range(FALLBACK_TROOP_SLOTS)
         ]
 
-    print(f"[Deploy] Found {len(troop_slots)} troop slots")
-    print(f"[Deploy] Deploying to {len(deploy_points)} points in top corner")
+    logger.info("Found %d troop slots", len(troop_slots))
+    logger.info("Deploying to %d points in top corner", len(deploy_points))
 
     for slot_idx, (sx, sy) in enumerate(troop_slots):
-        print(f"[Deploy] Selecting troop slot {slot_idx + 1}...")
+        logger.debug("Selecting troop slot %d...", slot_idx + 1)
         tap(sx, sy, delay=0.3)
 
         # Rapid-tap all deployment points
@@ -163,7 +167,7 @@ def deploy_troops(img):
     h, w = img.shape[:2]
     bar_y = int(h * TROOP_BAR_Y_RATIO)
     for swipe_round in range(DEPLOY_SWIPE_ROUNDS):
-        print(f"[Deploy] Swiping troop bar left (round {swipe_round + 1})...")
+        logger.debug("Swiping troop bar left (round %d)...", swipe_round + 1)
         swipe(w // 2, bar_y, w // 4, bar_y, 300)
         time.sleep(0.5)
 
@@ -172,12 +176,12 @@ def deploy_troops(img):
         deploy_points = get_deploy_corner(img)
 
         if not new_slots:
-            print("[Deploy] No more troop slots found")
+            logger.debug("No more troop slots found")
             break
 
-        print(f"[Deploy] Found {len(new_slots)} more troop slots")
+        logger.debug("Found %d more troop slots", len(new_slots))
         for slot_idx, (sx, sy) in enumerate(new_slots):
-            print(f"[Deploy] Selecting extra troop slot {slot_idx + 1}...")
+            logger.debug("Selecting extra troop slot %d...", slot_idx + 1)
             tap(sx, sy, delay=0.3)
 
             for (dx, dy) in deploy_points:
@@ -185,56 +189,61 @@ def deploy_troops(img):
 
             time.sleep(0.2)
 
-    print("[Deploy] All troops deployed!")
+    logger.info("All troops deployed!")
 
 
 def wait_for_battle_end():
     """
     Called AFTER troops have been deployed.
-    Waits for the battle to end by screenshotting periodically.
+    Polls for the battle to end by screenshotting periodically.
     Looks for the stars/results screen.
     """
-    print(f"[Battle] Troops deployed — now checking every {BATTLE_CHECK_INTERVAL}s for battle end...")
+    logger.info("Troops deployed — checking every %ds for battle end...", BATTLE_CHECK_INTERVAL)
     start = time.time()
 
     while time.time() - start < BATTLE_TIMEOUT:
-        time.sleep(BATTLE_CHECK_INTERVAL)
+        # Check first, then sleep (not sleep first)
         elapsed = int(time.time() - start)
-        print(f"[Battle] Screenshot at {elapsed}s — checking if battle ended...")
+        logger.debug("Screenshot at %ds — checking if battle ended...", elapsed)
         img = screenshot()
 
         state = detect_screen_state(img)
-        if state == "stars":
-            print("[Battle] Battle ended! Stars screen detected.")
+        if state == GameState.RESULTS:
+            logger.info("Battle ended! Stars screen detected.")
             return True
 
-    print("[Battle] Battle timeout reached")
+        time.sleep(BATTLE_CHECK_INTERVAL)
+
+    logger.warning("Battle timeout reached")
     return False
 
 
 def return_home():
     """Tap Return Home on the results screen."""
-    print("[Battle] Looking for Return Home button...")
+    logger.info("Looking for Return Home button...")
 
     for attempt in range(5):
         img = screenshot()
         pos = find_button(img, "return_home")
         if pos:
-            print(f"[Battle] Found Return Home at {pos}")
-            tap(*pos, delay=3)
-            time.sleep(3)
+            logger.info("Found Return Home at %s", pos)
+            result = tap_and_verify(*pos, expected_state=GameState.VILLAGE, timeout=5, delay=2)
+            if result is not None:
+                logger.info("Back on village screen")
+                return True
+            # State didn't verify but tap succeeded, continue checking
             return True
         # Tap center to dismiss any overlay
         h, w = img.shape[:2]
-        tap(w // 2, h // 2, delay=2)
+        tap(w // 2, h // 2, delay=1)
 
-    print("[Battle] Could not find Return Home")
+    logger.warning("Could not find Return Home")
     return False
 
 
 def surrender_and_return():
     """Exit an active scouting/battle screen by surrendering, then return home."""
-    print("[Battle] Surrendering and returning home...")
+    logger.info("Surrendering and returning home...")
     img = screenshot()
 
     # Try tapping End Battle to surrender
@@ -246,7 +255,8 @@ def surrender_and_return():
         confirm = find_button(img2, "confirm_upgrade")
         if confirm:
             tap(*confirm, delay=3)
-        time.sleep(3)
+        # Wait for stars screen instead of fixed sleep
+        wait_for_state(GameState.RESULTS, timeout=5)
 
     return_home()
 
@@ -261,30 +271,28 @@ def do_attack():
     5. THEN start interval screenshots to wait for battle end
     6. Return home
     """
-    global _cached_buttons
-    _cached_buttons = {}
-
     if not enter_battle():
         return False
 
-    # Take initial screenshot of the first enemy base
-    time.sleep(2)
-    print("[Scout] Taking screenshot of first enemy base...")
-    img = screenshot()
+    # Wait for the first enemy base to load
+    logger.info("Waiting for first enemy base...")
+    img = wait_for_state(GameState.SCOUTING, timeout=5)
+    if img is None:
+        logger.debug("Taking screenshot of first enemy base...")
+        img = screenshot()
 
     # Scout bases until we find one worth attacking
     for i in range(MAX_BASE_SKIPS):
-        print(f"\n[Scout] Base #{i + 1}...")
+        logger.info("Base #%d...", i + 1)
         attacked, next_img = scout_and_decide(img)
         if attacked:
             break
         img = next_img
     else:
-        print("[Battle] Skipped too many bases, surrendering...")
+        logger.warning("Skipped too many bases, surrendering...")
         surrender_and_return()
         return False
 
     wait_for_battle_end()
-    time.sleep(3)
     return_home()
     return True

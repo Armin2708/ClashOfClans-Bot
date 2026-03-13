@@ -10,13 +10,20 @@ GAME_PACKAGE = "com.supercell.clashofclans"
 # Minimum loot on an enemy base to attack (gold OR elixir)
 MIN_LOOT_TO_ATTACK = 1_000_000
 
-# Resource storage capacity — when both are at or above this, upgrade walls
-GOLD_STORAGE_FULL = 8_000_000
-ELIXIR_STORAGE_FULL = 8_000_000
+# Resource storage capacity — when either is at or above this, upgrade walls
+GOLD_STORAGE_FULL = 24_000_000
+ELIXIR_STORAGE_FULL = 24_000_000
+
+# Max walls to upgrade per round
+MAX_WALL_UPGRADES = 3
+
+# Farm mode — attack until both resources reach this target
+FARM_TARGET_GOLD = 31_000_000
+FARM_TARGET_ELIXIR = 31_000_000
 
 # ─── TIMING ───────────────────────────────────────────────
-BATTLE_CHECK_INTERVAL = 5    # seconds between screenshots AFTER troops deployed
-LOOP_DELAY = 3               # seconds between main loop iterations
+BATTLE_CHECK_INTERVAL = 2    # seconds between screenshots AFTER troops deployed
+LOOP_DELAY = 0               # seconds between main loop iterations
 APP_LAUNCH_WAIT = 15         # seconds to wait after launching the app
 SCOUT_WAIT = 3               # seconds to wait for next base to load
 BATTLE_TIMEOUT = 180         # max seconds to wait for battle to end
@@ -24,7 +31,7 @@ BATTLE_TIMEOUT = 180         # max seconds to wait for battle to end
 # ─── TEMPLATE MATCHING ───────────────────────────────────
 TEMPLATE_THRESHOLD = 0.75    # default confidence threshold
 SCREEN_DETECT_THRESHOLD = 0.72  # threshold for screen state detection
-WALL_MATCH_THRESHOLD = 0.7  # threshold for wall template matching
+WALL_MATCH_THRESHOLD = 0.8  # threshold for wall template matching
 
 # ─── BUTTON ROI REGIONS (for fast screen state detection) ─
 # Each button only appears in a known area of the screen.
@@ -55,7 +62,7 @@ ENEMY_LOOT_Y_DEDUP = 50  # min Y distance between distinct loot lines
 ENEMY_LOOT_SCALES = [0.9, 1.0, 1.2, 1.5, 2.0]
 
 # ─── TROOP DEPLOYMENT ───────────────────────────────────
-TROOP_BAR_Y_RATIO = 0.85   # troop bar Y as fraction of screen height
+TROOP_BAR_Y_RATIO = 0.91   # troop bar Y as fraction of screen height (below category tabs)
 DEPLOY_NUM_POINTS = 15      # number of deploy points along the corner
 DEPLOY_X_START = 0.1        # deploy line start X (fraction of width)
 DEPLOY_X_END = 0.4          # deploy line end X (fraction of width)
@@ -73,6 +80,8 @@ TROOP_SLOT_MIN_ASPECT = 0.5
 TROOP_SLOT_MAX_ASPECT = 2.0
 TROOP_SLOT_MIN_DIST = 60
 TROOP_SLOT_GRAY_THRESH = 80
+TROOP_BAR_X_START = 100      # left bound — skip surrender/end battle button area
+TROOP_BAR_X_END = 2400       # right bound — skip edge UI
 
 # ─── BATTLE SCOUTING ────────────────────────────────────
 MAX_BASE_SKIPS = 30         # max bases to scout before giving up
@@ -88,7 +97,7 @@ DEPLOY_SWIPE_DURATION = 500
 
 # Game area bounds (exclude UI elements at edges)
 # Walls should only be in the central game area
-GAME_AREA = (120, 80, 2400, 1250)  # x1, y1, x2, y2
+GAME_AREA = (120, 250, 2400, 1250)  # x1, y1, x2, y2
 
 # Wall template matching scales and deduplication
 WALL_SCALES = [0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.5]
@@ -97,3 +106,11 @@ WALL_SORT_ROW_HEIGHT = 30  # group walls into rows of this height for sorting
 
 # Neutral tap location to deselect (top-left corner, away from UI)
 EMPTY_TAP = (20, 700)
+
+# ─── DISCORD ─────────────────────────────────────────────
+DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1481205905524785274/Dh9jcn8hiEKfFBFFXNPxGOQ2Tr3gydBb9C6gWH43SaWuH5HiBqzt1sKSI-xXZjqClNHv"
+
+# ─── CRASH RECOVERY ──────────────────────────────────────
+CIRCUIT_BREAKER_MAX_FAILURES = 3    # consecutive restart failures before stopping
+CIRCUIT_BREAKER_WINDOW = 300        # seconds (5 minutes) window for failure tracking
+MAX_UNKNOWN_STATE_STREAK = 3        # consecutive unknown states before restart

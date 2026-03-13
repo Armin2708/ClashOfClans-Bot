@@ -15,9 +15,13 @@ Performance notes:
 import cv2
 import numpy as np
 import re
+import logging
 import pytesseract
 from screen import screenshot
 from utils import find_template, load_template, load_template_gray, save_debug
+from state_machine import GameState
+
+logger = logging.getLogger("coc.vision")
 from config import (
     GAME_AREA, TEMPLATE_THRESHOLD, SCREEN_DETECT_THRESHOLD,
     WALL_MATCH_THRESHOLD, WALL_SCALES, WALL_DEDUP_DIST, WALL_SORT_ROW_HEIGHT,
@@ -29,6 +33,7 @@ from config import (
     TROOP_SLOT_MIN_AREA, TROOP_SLOT_MAX_AREA,
     TROOP_SLOT_MIN_ASPECT, TROOP_SLOT_MAX_ASPECT,
     TROOP_SLOT_MIN_DIST, TROOP_SLOT_GRAY_THRESH,
+    TROOP_BAR_X_START, TROOP_BAR_X_END,
     BUTTON_ROIS,
 )
 
@@ -116,7 +121,7 @@ def validate_critical_templates():
             f"These are required for safe bot operation. "
             f"Check your templates/ directory."
         )
-    print(f"[Vision] All critical templates validated: {', '.join(critical)}")
+    logger.info("All critical templates validated: %s", ", ".join(critical))
 
 
 # ─── SCREEN STATE DETECTION ─────────────────────────────────
@@ -151,7 +156,8 @@ def _find_in_roi(img_gray, button_name, threshold):
 def detect_screen_state(img):
     """
     Figure out which screen we're on.
-    Returns one of: 'village', 'attack_menu', 'army', 'battle', 'in_battle', 'stars', 'unknown'
+    Returns a GameState enum. Enum values match the old string returns
+    for backward compatibility (e.g. GameState.VILLAGE == "village").
 
     Uses ROI-cropped grayscale matching for speed (~8x faster than full-image BGR).
     """
@@ -165,31 +171,31 @@ def detect_screen_state(img):
 
     # Stars/results screen — check first since it overlays everything
     if _find_in_roi(gray, "stars_screen", th):
-        return "stars"
+        return GameState.RESULTS
     if _find_in_roi(gray, "return_home", th):
-        return "stars"
+        return GameState.RESULTS
 
     # Next base button = scouting an enemy base
     if _find_in_roi(gray, "next_base", th):
-        return "battle"
+        return GameState.SCOUTING
 
     # End Battle button = active combat (troops deployed)
     if _find_in_roi(gray, "end_battle", th):
-        return "in_battle"
+        return GameState.BATTLE_ACTIVE
 
     # Start Battle / Attack on army screen (green button bottom-right)
     if _find_in_roi(gray, "start_battle", th):
-        return "army"
+        return GameState.ARMY
 
     # Find a Match = attack menu
     if _find_in_roi(gray, "find_match", th):
-        return "attack_menu"
+        return GameState.ATTACK_MENU
 
     # Attack button = village screen
     if _find_in_roi(gray, "attack_button", th):
-        return "village"
+        return GameState.VILLAGE
 
-    return "unknown"
+    return GameState.UNKNOWN
 
 
 # ─── DIGIT TEMPLATE MATCHING ─────────────────────────────────
@@ -206,7 +212,7 @@ def _load_digit_templates():
         if t is not None:
             _DIGIT_TEMPLATES[d] = cv2.cvtColor(t, cv2.COLOR_BGR2GRAY)
     if _DIGIT_TEMPLATES:
-        print(f"[Vision] Loaded digit templates: {sorted(_DIGIT_TEMPLATES.keys())}")
+        logger.info("Loaded digit templates: %s", sorted(_DIGIT_TEMPLATES.keys()))
 
 
 def _read_number_template(crop, extra_scales=None, is_gray=False):
@@ -317,14 +323,14 @@ def read_resources_from_village(img):
     gold_region = img[gy1:gy2, gx1:gx2]
     gold = _read_number_template(gold_region)
     if gold is None:
-        print("[Vision] Warning: could not read gold, defaulting to 0")
+        logger.warning("Could not read gold, defaulting to 0")
         gold = 0
 
     ex1, ey1, ex2, ey2 = ELIXIR_REGION
     elixir_region = img[ey1:ey2, ex1:ex2]
     elixir = _read_number_template(elixir_region)
     if elixir is None:
-        print("[Vision] Warning: could not read elixir, defaulting to 0")
+        logger.warning("Could not read elixir, defaulting to 0")
         elixir = 0
 
     return gold, elixir
@@ -374,73 +380,71 @@ def read_enemy_loot(img):
 
 # ─── WALL DETECTION ──────────────────────────────────────────
 
-_WALL_TEMPLATES = None
-_WALL_TEMPLATES_GRAY = None
-
-
-def _load_wall_templates():
-    """Load wall templates from templates/walls/ (both BGR and grayscale)."""
-    global _WALL_TEMPLATES, _WALL_TEMPLATES_GRAY
-    _WALL_TEMPLATES = []
-    _WALL_TEMPLATES_GRAY = []
-    import glob
-    for ext in ("*.png", "*.jpg", "*.jpeg"):
-        for path in sorted(glob.glob(f"templates/walls/{ext}")):
-            t = cv2.imread(path)
-            if t is not None:
-                _WALL_TEMPLATES.append(t)
-                _WALL_TEMPLATES_GRAY.append(cv2.cvtColor(t, cv2.COLOR_BGR2GRAY))
-                print(f"[Vision] Loaded wall template: {path} ({t.shape[1]}x{t.shape[0]})")
-    if not _WALL_TEMPLATES:
-        print("[Vision] No wall templates found")
-
 
 def detect_walls(img):
     """
-    Detect wall positions using grayscale template matching.
+    Detect wall positions using HSV color filtering.
+    Finds gold walls (yellow dome) in the game area.
     Returns list of (x, y) center coordinates.
     """
-    global _WALL_TEMPLATES, _WALL_TEMPLATES_GRAY
-    if _WALL_TEMPLATES is None:
-        _load_wall_templates()
-
-    if not _WALL_TEMPLATES_GRAY:
-        print("[Vision] No wall templates found in templates/walls/")
-        return []
-
     gx1, gy1, gx2, gy2 = GAME_AREA
     game_region = img[gy1:gy2, gx1:gx2]
-
-    # Convert game region to grayscale once
-    if len(game_region.shape) == 3:
-        game_gray = cv2.cvtColor(game_region, cv2.COLOR_BGR2GRAY)
-    else:
-        game_gray = game_region
+    hsv = cv2.cvtColor(game_region, cv2.COLOR_BGR2HSV)
 
     wall_positions = []
 
-    for template_gray in _WALL_TEMPLATES_GRAY:
-        th, tw = template_gray.shape[:2]
+    # Gold walls: distinctive yellow/gold dome
+    # Tight range to avoid matching gold UI elements, coins, etc.
+    gold_lower = np.array([20, 120, 160])
+    gold_upper = np.array([35, 255, 255])
+    gold_mask = cv2.inRange(hsv, gold_lower, gold_upper)
+    contours, _ = cv2.findContours(gold_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-        for scale in WALL_SCALES:
-            sh, sw = int(th * scale), int(tw * scale)
-            if sh > game_gray.shape[0] or sw > game_gray.shape[1]:
-                continue
-            scaled = cv2.resize(template_gray, (sw, sh))
-
-            result = cv2.matchTemplate(game_gray, scaled, cv2.TM_CCOEFF_NORMED)
-            locations = np.where(result >= WALL_MATCH_THRESHOLD)
-
-            scaled_dedup = int(WALL_DEDUP_DIST * scale)
-            for y, x in zip(*locations):
-                cx = x + sw // 2 + gx1
-                cy = y + sh // 2 + gy1
-                if not any(abs(cx - px) < scaled_dedup and abs(cy - py) < scaled_dedup
+    for c in contours:
+        area = cv2.contourArea(c)
+        # Wall gold domes are ~100-900 px area depending on zoom level
+        if 80 < area < 1000:
+            x, y, w, h = cv2.boundingRect(c)
+            aspect = w / max(h, 1)
+            # Wall domes are roughly square (aspect 0.7-2.0)
+            if 0.7 < aspect < 2.0:
+                cx = x + w // 2 + gx1
+                cy = y + h // 2 + gy1
+                if not any(abs(cx - px) < WALL_DEDUP_DIST and abs(cy - py) < WALL_DEDUP_DIST
                            for px, py in wall_positions):
                     wall_positions.append((cx, cy))
 
-    wall_positions.sort(key=lambda p: (p[1] // WALL_SORT_ROW_HEIGHT, p[0]))
-    return wall_positions
+    # Filter: only keep positions that have at least 1 neighbor nearby
+    # This removes isolated false positives on buildings.
+    # If we have many raw detections (5+), they're almost certainly real walls,
+    # so use a lenient filter. For few detections, require closer neighbors.
+    NEIGHBOR_DIST = 100
+    MIN_NEIGHBORS = 1
+    if len(wall_positions) >= 5:
+        # Enough detections to be confident — just filter obvious outliers
+        filtered = []
+        for (cx, cy) in wall_positions:
+            neighbors = sum(1 for (px, py) in wall_positions
+                            if (cx, cy) != (px, py)
+                            and abs(cx - px) < NEIGHBOR_DIST
+                            and abs(cy - py) < NEIGHBOR_DIST)
+            if neighbors >= MIN_NEIGHBORS:
+                filtered.append((cx, cy))
+    else:
+        # Few detections — be stricter to avoid false positives
+        filtered = []
+        for (cx, cy) in wall_positions:
+            neighbors = sum(1 for (px, py) in wall_positions
+                            if (cx, cy) != (px, py)
+                            and abs(cx - px) < 60
+                            and abs(cy - py) < 60)
+            if neighbors >= 2:
+                filtered.append((cx, cy))
+
+    filtered.sort(key=lambda p: (p[1] // WALL_SORT_ROW_HEIGHT, p[0]))
+    logger.info("Detected %d walls by color (%d raw, %d filtered)",
+                len(filtered), len(wall_positions), len(wall_positions) - len(filtered))
+    return filtered
 
 
 # ─── BUTTON FINDING ──────────────────────────────────────────
@@ -481,13 +485,15 @@ def get_troop_slots(img):
     Detect troop slots in the deployment bar at the bottom.
     Returns list of (x, y) for each troop slot.
 
-    From the ref_battle.png screenshot, the troop bar is at the very bottom
-    with troop icons in boxes. We detect them by finding bright rectangles
-    in the dark bar area.
+    Only scans the actual troop icon row (below category tabs like
+    super troops/siege machines) and within X bounds to avoid
+    edge UI elements like the surrender button.
     """
     h, w = img.shape[:2]
     bar_y = int(h * TROOP_BAR_Y_RATIO)
-    bar = img[bar_y:, :]
+    x_start = TROOP_BAR_X_START
+    x_end = min(TROOP_BAR_X_END, w)
+    bar = img[bar_y:, x_start:x_end]
 
     gray = cv2.cvtColor(bar, cv2.COLOR_BGR2GRAY)
     _, thresh = cv2.threshold(gray, TROOP_SLOT_GRAY_THRESH, 255, cv2.THRESH_BINARY)
@@ -501,7 +507,7 @@ def get_troop_slots(img):
             x, y, cw, ch = cv2.boundingRect(c)
             aspect = cw / max(ch, 1)
             if TROOP_SLOT_MIN_ASPECT < aspect < TROOP_SLOT_MAX_ASPECT:
-                cx = x + cw // 2
+                cx = x + cw // 2 + x_start  # offset back to full-image coords
                 cy = y + ch // 2 + bar_y
                 if not any(abs(cx - sx) < TROOP_SLOT_MIN_DIST for sx, _ in slots):
                     slots.append((cx, cy))
