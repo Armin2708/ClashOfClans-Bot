@@ -21,6 +21,17 @@ Thumbs.db
 debug_*.png
 test_*.png
 
+# Bot data
+.cocbot/
+bot.log
+
 # Compiled
 *.so
 *.dylib
+
+# PyInstaller build artifacts
+build/
+dist/
+tools/
+*.dmg
+*.spec.bak
