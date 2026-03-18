@@ -7,7 +7,6 @@ Usage:
     python test_offline.py screen         # Screen state detection tests
     python test_offline.py resources      # Resource reading tests
     python test_offline.py loot           # Enemy loot reading tests
-    python test_offline.py walls          # Wall detection tests
     python test_offline.py templates      # Template validation tests
     python test_offline.py roi            # ROI correctness tests
     python test_offline.py flow           # Flow logic tests (mocked)
@@ -188,58 +187,7 @@ def test_read_enemy_loot_early_exit():
         _fail(f"Loot reading averages {avg_ms:.0f}ms (too slow, > 2s)")
 
 
-# ─── D. WALL DETECTION ──────────────────────────────────────
-
-def test_detect_walls_village():
-    print("\n>>> TEST: Wall detection from ref_village.png")
-    from bot.vision import detect_walls
-
-    img = _load_ref("village")
-    if img is None:
-        _skip("ref_village.png not found")
-        return
-
-    walls = detect_walls(img)
-    print(f"  Found {len(walls)} walls")
-
-    if isinstance(walls, list):
-        _pass("detect_walls() returns a list")
-    else:
-        _fail(f"detect_walls() returned {type(walls)}")
-
-    if len(walls) > 0:
-        _pass(f"Detected {len(walls)} walls from village image")
-    else:
-        _fail("No walls detected from ref_village.png")
-
-    # Check all positions are valid tuples
-    all_valid = all(isinstance(w, tuple) and len(w) == 2 for w in walls)
-    if all_valid:
-        _pass("All wall positions are (x, y) tuples")
-    else:
-        _fail("Some wall positions are not valid (x, y) tuples")
-
-
-def test_detect_walls_empty():
-    print("\n>>> TEST: Wall detection from non-village image")
-    from bot.vision import detect_walls
-
-    img = _load_ref("battle")
-    if img is None:
-        _skip("ref_battle.png not found")
-        return
-
-    walls = detect_walls(img)
-    print(f"  Found {len(walls)} walls (expected 0 or very few)")
-
-    # Battle screen should have no walls (or very few false positives)
-    if len(walls) <= 5:
-        _pass(f"Few/no walls on battle screen ({len(walls)} found)")
-    else:
-        _fail(f"Too many walls on battle screen ({len(walls)} found — likely false positives)")
-
-
-# ─── E. TEMPLATE VALIDATION ─────────────────────────────────
+# ─── D. TEMPLATE VALIDATION ─────────────────────────────────
 
 def test_validate_critical_templates():
     print("\n>>> TEST: Critical template validation")
@@ -412,24 +360,6 @@ def test_scout_and_decide_skip():
         _fail("next_img should not be None when skipping")
 
 
-def test_upgrade_walls_low_resources():
-    print("\n>>> TEST: WallUpgradeStrategy — resources below threshold")
-
-    from bot.buildings import WallUpgradeStrategy
-
-    strategy = WallUpgradeStrategy()
-
-    if not strategy.should_upgrade(1_000_000, 500_000):
-        _pass("should_upgrade() returned False for low resources")
-    else:
-        _fail("should_upgrade() should return False for low resources")
-
-    if strategy.should_upgrade(25_000_000, 500_000):
-        _pass("should_upgrade() returned True for high gold")
-    else:
-        _fail("should_upgrade() should return True for high gold")
-
-
 def test_ensure_on_village_already_there():
     print("\n>>> TEST: ensure_on_village() — already on village")
 
@@ -514,34 +444,6 @@ def test_benchmark_loot_reading():
         _fail(f"Loot reading: {avg_ms:.0f}ms (too slow, > 2s)")
 
 
-def test_benchmark_wall_detect():
-    print("\n>>> BENCHMARK: detect_walls()")
-    from bot.vision import detect_walls
-
-    img = _load_ref("village")
-    if img is None:
-        _skip("ref_village.png not found")
-        return
-
-    # Warmup
-    detect_walls(img)
-
-    runs = 10
-    start = time.time()
-    for _ in range(runs):
-        detect_walls(img)
-    avg_ms = (time.time() - start) / runs * 1000
-
-    print(f"  {runs} iterations: avg {avg_ms:.0f}ms per call")
-
-    if avg_ms < 1000:
-        _pass(f"Wall detection: {avg_ms:.0f}ms (fast)")
-    elif avg_ms < 2000:
-        _pass(f"Wall detection: {avg_ms:.0f}ms (acceptable)")
-    else:
-        _fail(f"Wall detection: {avg_ms:.0f}ms (too slow, > 2s)")
-
-
 def test_benchmark_resource_reading():
     print("\n>>> BENCHMARK: read_resources_from_village()")
     from bot.vision import read_resources_from_village
@@ -581,16 +483,15 @@ GROUPS = {
     "screen": [test_screen_states, test_unknown_state],
     "resources": [test_read_village_resources, test_read_zero_resources],
     "loot": [test_read_enemy_loot, test_read_enemy_loot_early_exit],
-    "walls": [test_detect_walls_village, test_detect_walls_empty],
     "templates": [test_validate_critical_templates, test_validate_missing_template],
     "roi": [test_roi_correctness, test_roi_all_buttons],
     "flow": [
         test_scout_and_decide_attack, test_scout_and_decide_skip,
-        test_upgrade_walls_low_resources, test_ensure_on_village_already_there,
+        test_ensure_on_village_already_there,
     ],
     "benchmark": [
         test_benchmark_screen_detect, test_benchmark_loot_reading,
-        test_benchmark_wall_detect, test_benchmark_resource_reading,
+        test_benchmark_resource_reading,
     ],
 }
 

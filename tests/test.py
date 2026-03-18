@@ -8,14 +8,12 @@ Usage:
     python test.py tap          # Test tapping
     python test.py resources    # Test resource reading
     python test.py buttons      # Test button detection
-    python test.py walls        # Test wall detection
     python test.py loot         # Test enemy loot reading (must be on scout screen)
     python test.py screen_state # Test screen state detection
     python test.py roi_speed    # Benchmark ROI vs full-image detection
     python test.py popups       # Test popup detection
     python test.py templates    # Validate critical templates
     python test.py troop_slots  # Test troop slot detection (must be on battle screen)
-    python test.py wall_upgrade # Test wall upgrade (DESTRUCTIVE — will upgrade a wall)
     python test.py battle       # Test full battle (DESTRUCTIVE — will attack)
     python test.py surrender    # Test surrender flow (must be on scout/battle screen)
 """
@@ -118,7 +116,7 @@ def test_buttons():
 
     buttons = ["attack_button", "find_match", "start_battle",
                "return_home", "stars_screen", "next_base",
-               "upgrade_wall", "confirm_upgrade", "end_battle"]
+               "confirm_upgrade", "end_battle"]
     found_count = 0
     for name in buttons:
         pos = find_button(img, name)
@@ -138,31 +136,6 @@ def test_buttons():
             _pass("Attack button found on village screen (expected)")
         else:
             _fail("Attack button NOT found on village screen")
-
-
-def test_walls():
-    print("\n>>> TEST: Wall Detection")
-    print("Make sure you're on the VILLAGE screen with walls visible")
-    from bot.screen import screenshot
-    from bot.vision import detect_walls
-    from bot.utils import save_debug
-    img = screenshot()
-
-    start = time.time()
-    walls = detect_walls(img)
-    elapsed = (time.time() - start) * 1000
-    print(f"  Found {len(walls)} walls in {elapsed:.0f}ms")
-
-    if isinstance(walls, list):
-        _pass("detect_walls() returned a list")
-    else:
-        _fail(f"detect_walls() returned {type(walls)}")
-
-    save_debug(img, "test_walls.png", points=walls)
-    print("  Saved test_walls.png — open it and check red circles are on your walls")
-
-    if len(walls) == 0:
-        _warn("No walls detected — check wall templates or zoom level")
 
 
 def test_loot():
@@ -316,20 +289,6 @@ def test_troop_slots():
 
 # ─── DESTRUCTIVE TESTS (require confirmation) ───────────────
 
-def test_wall_upgrade():
-    print("\n>>> TEST: Wall Upgrade (DESTRUCTIVE)")
-    print("Make sure you're on the VILLAGE screen with walls visible")
-    print("This will try to upgrade walls!")
-    print("Starting in 5 seconds... (Ctrl+C to cancel)")
-    time.sleep(5)
-    from bot.walls import upgrade_walls
-    count = upgrade_walls()
-    if count > 0:
-        _pass(f"Upgraded {count} wall(s)")
-    else:
-        _warn("No walls upgraded — resources too low or no walls detected")
-
-
 def test_battle():
     print("\n>>> TEST: Full Battle (DESTRUCTIVE)")
     print("Make sure you're on the VILLAGE screen with troops trained")
@@ -374,8 +333,6 @@ def run_all():
     test_resources()
     input("\nPress Enter to continue to button test...")
     test_buttons()
-    input("\nPress Enter to continue to wall detection test...")
-    test_walls()
     input("\nPress Enter to continue to ROI speed benchmark...")
     test_roi_speed()
 
@@ -385,7 +342,6 @@ def run_all():
     print("Basic tests done!")
     print("Destructive tests (require specific game state):")
     print("  python test.py battle       # Full battle (village screen, troops trained)")
-    print("  python test.py wall_upgrade # Wall upgrade (village screen)")
     print("  python test.py surrender    # Surrender (scout/battle screen)")
     print("  python test.py loot         # Loot reading (scout screen)")
     print("  python test.py troop_slots  # Troop slots (battle screen)")
@@ -413,8 +369,6 @@ if __name__ == "__main__":
         "tap": test_tap,
         "resources": test_resources,
         "buttons": test_buttons,
-        "walls": test_walls,
-        "wall_upgrade": test_wall_upgrade,
         "loot": test_loot,
         "battle": test_battle,
         "screen_state": test_screen_state,

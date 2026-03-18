@@ -4,18 +4,16 @@ Comprehensive test suite for all Clash of Clans bot features.
 Tests both new and existing functionality:
   - State machine (GameState, StateTracker)
   - Metrics tracking
-  - Building abstraction & upgrade strategies
   - Discord notifications
   - Circuit breaker
   - Screen functions (screenshot, tap, state detection)
-  - Vision (wall detection, button detection, resource reading)
+  - Vision (button detection, resource reading)
   - Tap verification & event-driven polling
 
 Usage:
     python test_all.py              # Run all tests
     python test_all.py state        # State machine tests only
     python test_all.py metrics      # Metrics tests only
-    python test_all.py buildings    # Building abstraction tests only
     python test_all.py notify       # Discord notification tests only
     python test_all.py circuit      # Circuit breaker tests only
     python test_all.py screen       # Screen/ADB tests (needs emulator)
@@ -238,23 +236,10 @@ def test_metrics_init():
     from bot.metrics import Metrics
 
     m = Metrics()
-    if m.walls_upgraded == 0 and m.bases_attacked == 0 and m.bases_skipped == 0:
+    if m.bases_attacked == 0 and m.bases_skipped == 0:
         _pass("All counters start at 0")
     else:
         _fail("Counters not zeroed")
-
-
-def test_metrics_record_wall():
-    print("\n>>> TEST: Metrics record_wall_upgrade()")
-    from bot.metrics import Metrics
-
-    m = Metrics()
-    m.record_wall_upgrade(3)
-    m.record_wall_upgrade(3)
-    if m.walls_upgraded == 6:
-        _pass(f"walls_upgraded = {m.walls_upgraded}")
-    else:
-        _fail(f"walls_upgraded = {m.walls_upgraded}, expected 6")
 
 
 def test_metrics_record_attack():
@@ -306,11 +291,10 @@ def test_metrics_summary():
     from bot.metrics import Metrics
 
     m = Metrics()
-    m.record_wall_upgrade(3)
     m.record_attack()
     m.record_skip()
     summary = m.get_summary()
-    if "walls=3" in summary and "attacks=1" in summary and "skips=1" in summary:
+    if "attacks=1" in summary and "skips=1" in summary:
         _pass(f"Summary: {summary}")
     else:
         _fail(f"Summary missing data: {summary}")
@@ -329,7 +313,6 @@ def test_metrics_thread_safety():
             for _ in range(n):
                 m.record_attack()
                 m.record_skip()
-                m.record_wall_upgrade(1)
         except Exception as e:
             errors.append(e)
 
@@ -339,100 +322,14 @@ def test_metrics_thread_safety():
     for t in threads:
         t.join()
 
-    if not errors and m.bases_attacked == 400 and m.bases_skipped == 400 and m.walls_upgraded == 400:
+    if not errors and m.bases_attacked == 400 and m.bases_skipped == 400:
         _pass("Thread-safe: 4 threads x 100 increments = 400 each")
     else:
-        _fail(f"Thread safety issue: attacked={m.bases_attacked}, skipped={m.bases_skipped}, walls={m.walls_upgraded}")
+        _fail(f"Thread safety issue: attacked={m.bases_attacked}, skipped={m.bases_skipped}")
 
 
 # ═══════════════════════════════════════════════════════════════
-# C. BUILDING ABSTRACTION TESTS
-# ═══════════════════════════════════════════════════════════════
-
-def test_building_dataclass():
-    print("\n>>> TEST: Building dataclass")
-    from bot.buildings import Building, GOLD_WALL
-
-    if GOLD_WALL.name == "wall":
-        _pass(f"GOLD_WALL.name = '{GOLD_WALL.name}'")
-    else:
-        _fail(f"GOLD_WALL.name = '{GOLD_WALL.name}', expected 'wall'")
-
-    if callable(GOLD_WALL.detect_method):
-        _pass("detect_method is callable")
-    else:
-        _fail("detect_method is not callable")
-
-
-def test_building_templates():
-    print("\n>>> TEST: Building upgrade templates loaded")
-    from bot.buildings import GOLD_WALL
-
-    gold_tmpl = GOLD_WALL.upgrade_templates.get("gold")
-    elixir_tmpl = GOLD_WALL.upgrade_templates.get("elixir")
-    panel_tmpl = GOLD_WALL.panel_button_template
-
-    if gold_tmpl is not None:
-        _pass(f"Gold upgrade template loaded (shape: {gold_tmpl.shape})")
-    else:
-        _fail("Gold upgrade template is None")
-
-    if elixir_tmpl is not None:
-        _pass(f"Elixir upgrade template loaded (shape: {elixir_tmpl.shape})")
-    else:
-        _fail("Elixir upgrade template is None")
-
-    if panel_tmpl is not None:
-        _pass(f"Panel button template loaded (shape: {panel_tmpl.shape})")
-    else:
-        _fail("Panel button template is None")
-
-
-def test_wall_strategy_should_upgrade():
-    print("\n>>> TEST: WallUpgradeStrategy.should_upgrade()")
-    from bot.buildings import WallUpgradeStrategy
-    from bot.config import GOLD_STORAGE_FULL, ELIXIR_STORAGE_FULL
-
-    strategy = WallUpgradeStrategy()
-
-    # Below threshold
-    if not strategy.should_upgrade(1_000_000, 1_000_000):
-        _pass("Low resources -> False")
-    else:
-        _fail("Low resources should return False")
-
-    # Gold full
-    if strategy.should_upgrade(GOLD_STORAGE_FULL, 0):
-        _pass(f"Gold >= {GOLD_STORAGE_FULL:,} -> True")
-    else:
-        _fail("Full gold should return True")
-
-    # Elixir full
-    if strategy.should_upgrade(0, ELIXIR_STORAGE_FULL):
-        _pass(f"Elixir >= {ELIXIR_STORAGE_FULL:,} -> True")
-    else:
-        _fail("Full elixir should return True")
-
-    # Both full
-    if strategy.should_upgrade(GOLD_STORAGE_FULL, ELIXIR_STORAGE_FULL):
-        _pass("Both full -> True")
-    else:
-        _fail("Both full should return True")
-
-
-def test_upgrade_strategy_abc():
-    print("\n>>> TEST: UpgradeStrategy is abstract")
-    from bot.buildings import UpgradeStrategy
-
-    try:
-        UpgradeStrategy()
-        _fail("Should not be able to instantiate abstract class")
-    except TypeError:
-        _pass("UpgradeStrategy cannot be instantiated (abstract)")
-
-
-# ═══════════════════════════════════════════════════════════════
-# D. DISCORD NOTIFICATION TESTS
+# C. DISCORD NOTIFICATION TESTS
 # ═══════════════════════════════════════════════════════════════
 
 def test_notify_send():
@@ -452,7 +349,6 @@ def test_notify_summary():
     from bot.notify import notify_summary
 
     m = Metrics()
-    m.record_wall_upgrade(3)
     m.record_attack()
     # Just verify it doesn't crash — actual send tested above
     try:
@@ -606,34 +502,6 @@ def test_tap_and_verify():
 # G. VISION TESTS (needs emulator)
 # ═══════════════════════════════════════════════════════════════
 
-def test_wall_detection():
-    print("\n>>> TEST: Wall detection")
-    from bot.screen import screenshot
-    from bot.vision import detect_walls
-
-    img = screenshot()
-    start = time.time()
-    walls = detect_walls(img)
-    elapsed = (time.time() - start) * 1000
-
-    if isinstance(walls, list):
-        _pass(f"detect_walls() returned list ({len(walls)} walls)")
-    else:
-        _fail(f"detect_walls() returned {type(walls)}")
-
-    if elapsed < 1000:
-        _pass(f"Detection time: {elapsed:.0f}ms")
-    else:
-        _fail(f"Detection time: {elapsed:.0f}ms (too slow)")
-
-    # All positions should be (x, y) tuples
-    all_valid = all(isinstance(w, tuple) and len(w) == 2 for w in walls)
-    if all_valid:
-        _pass("All positions are (x, y) tuples")
-    else:
-        _fail("Some positions are not valid tuples")
-
-
 def test_button_detection():
     print("\n>>> TEST: Button detection")
     from bot.screen import screenshot
@@ -711,22 +579,15 @@ def test_ensure_on_village_mocked():
         _fail(f"Returns {result}, expected True")
 
 
-def test_main_loop_stops_on_upgrade_fail():
-    print("\n>>> TEST: Main loop stops when upgrade fails with full resources")
-    from bot.config import GOLD_STORAGE_FULL
-
-    # The logic in main.py:
-    # if gold >= GOLD_STORAGE_FULL or elixir >= ELIXIR_STORAGE_FULL:
-    #     ... try upgrade ...
-    #     if not upgraded:
-    #         notify(...)
-    #         return  <-- stops
-    # This is verified by reading the code — the bot stops, not attacks
-    from bot.main import UPGRADE_STRATEGIES
-    if len(UPGRADE_STRATEGIES) > 0:
-        _pass(f"UPGRADE_STRATEGIES has {len(UPGRADE_STRATEGIES)} strategies")
+def test_main_loop_always_attacks():
+    print("\n>>> TEST: Main loop always attacks (no upgrade logic)")
+    # Verify that main.py no longer has UPGRADE_STRATEGIES
+    import bot.main as main_mod
+    has_upgrade = hasattr(main_mod, 'UPGRADE_STRATEGIES')
+    if not has_upgrade:
+        _pass("No UPGRADE_STRATEGIES in main — pure farming bot")
     else:
-        _fail("UPGRADE_STRATEGIES is empty")
+        _fail("UPGRADE_STRATEGIES still exists in main")
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -743,13 +604,9 @@ GROUPS = {
         test_state_timeouts,
     ],
     "metrics": [
-        test_metrics_init, test_metrics_record_wall, test_metrics_record_attack,
+        test_metrics_init, test_metrics_record_attack,
         test_metrics_record_skip, test_metrics_record_restart,
         test_metrics_summary, test_metrics_thread_safety,
-    ],
-    "buildings": [
-        test_building_dataclass, test_building_templates,
-        test_wall_strategy_should_upgrade, test_upgrade_strategy_abc,
     ],
     "notify": [
         test_notify_send, test_notify_summary,
@@ -764,12 +621,12 @@ GROUPS = {
         test_tap_and_verify,
     ],
     "vision": [
-        test_wall_detection, test_button_detection,
+        test_button_detection,
         test_resource_reading, test_template_validation,
         test_popup_detection,
     ],
     "flow": [
-        test_ensure_on_village_mocked, test_main_loop_stops_on_upgrade_fail,
+        test_ensure_on_village_mocked, test_main_loop_always_attacks,
     ],
 }
 
