@@ -129,7 +129,7 @@ DEFAULTS = {
 
     # Discord
     "discord_webhook_url": "",
-    "discord_enabled": False,
+    "discord_enabled": True,
 
     # Onboarding
     "onboarding_completed": False,

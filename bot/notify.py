@@ -14,7 +14,7 @@ def notify(message, max_retries=2):
     """Send a message to Discord via webhook with retry logic.
     Silently no-ops if Discord is disabled or no webhook URL is set."""
     settings = Settings()
-    if not settings.get("discord_enabled", False):
+    if not settings.get("discord_enabled", True):
         logger.debug("Discord disabled, skipping: %s", message)
         return False
 
