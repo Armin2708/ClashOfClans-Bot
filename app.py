@@ -30,6 +30,9 @@ def _configure_bundled_tools():
     if os.path.isfile(bundled_tess):
         import pytesseract
         pytesseract.pytesseract.tesseract_cmd = bundled_tess
+        # Ensure tesseract finds its own dylibs (not OpenCV's conflicting ones)
+        tools_path = os.path.join(bundle_dir, "tools")
+        os.environ["DYLD_LIBRARY_PATH"] = tools_path + os.pathsep + os.environ.get("DYLD_LIBRARY_PATH", "")
         # Tesseract needs TESSDATA_PREFIX to find language data
         tessdata = os.path.join(bundle_dir, "tools", "tessdata")
         if os.path.isdir(tessdata):

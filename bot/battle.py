@@ -11,7 +11,8 @@ import logging
 from bot.screen import screenshot, tap, swipe, wait_for_state, tap_and_verify
 from bot.vision import (
     find_button, detect_screen_state, read_enemy_loot,
-    get_deploy_corner, get_troop_slots, find_popup
+    get_deploy_corner, get_troop_slots, find_popup,
+    auto_capture_template
 )
 import bot.config as config
 from bot.state_machine import GameState
@@ -103,21 +104,31 @@ def skip_base(img):
     """
     Tap the 'Next' button to skip to another base.
     Waits for the next base to load, then takes and returns a fresh screenshot.
+    Falls back to tapping the center of the Next button ROI if template matching fails.
     """
     pos = find_button(img, "next_base")
-    if pos:
-        tap(*pos, delay=1)
-        # Poll for scouting state instead of fixed sleep
-        result = wait_for_state(GameState.SCOUTING, timeout=config.SCOUT_WAIT + 2, poll_interval=0.5)
-        if result is not None:
-            logger.debug("Next base loaded")
-            return result
-        logger.debug("Taking screenshot of next base...")
-        return screenshot()
-    else:
-        logger.warning("Next button not found!")
-        time.sleep(2)
-        return screenshot()
+    if not pos:
+        # Fallback: tap center of the Next button ROI region.
+        # The next_base template often fails because it captures a variable
+        # gold cost number instead of the stable button graphic.
+        roi = config.BUTTON_ROIS.get("next_base")
+        if roi:
+            x1, y1, x2, y2 = roi
+            pos = ((x1 + x2) // 2, (y1 + y2) // 2)
+            logger.info("Next button template miss — tapping ROI center (%d, %d)", *pos)
+        else:
+            logger.warning("Next button not found and no ROI fallback!")
+            time.sleep(2)
+            return screenshot()
+
+    tap(*pos, delay=1)
+    # Poll for scouting state instead of fixed sleep
+    result = wait_for_state(GameState.SCOUTING, timeout=config.SCOUT_WAIT + 2, poll_interval=0.5)
+    if result is not None:
+        logger.debug("Next base loaded")
+        return result
+    logger.debug("Taking screenshot of next base...")
+    return screenshot()
 
 
 def deploy_troops(img):
@@ -275,12 +286,30 @@ def do_attack():
         logger.debug("Taking screenshot of first enemy base...")
         img = screenshot()
 
+    # Auto-capture the Next button template from the live scouting screen.
+    # This keeps the template current even when game UI or costs change.
+    auto_capture_template(img, "next_base")
+
     # Scout bases until we find one worth attacking
+    consecutive_skip_failures = 0
     for i in range(config.MAX_BASE_SKIPS):
         logger.info("Base #%d...", i + 1)
         attacked, next_img = scout_and_decide(img)
         if attacked:
             break
+        # Detect stuck loop: if loot values are identical, the base didn't change
+        if next_img is not None:
+            new_gold, new_elixir = read_enemy_loot(next_img)
+            old_gold, old_elixir = read_enemy_loot(img)
+            if new_gold == old_gold and new_elixir == old_elixir:
+                consecutive_skip_failures += 1
+                logger.warning("Same base detected after skip (%d/%d)", consecutive_skip_failures, 3)
+                if consecutive_skip_failures >= 3:
+                    logger.error("Stuck on same base — Next button likely broken. Surrendering.")
+                    surrender_and_return()
+                    return False
+            else:
+                consecutive_skip_failures = 0
         img = next_img
     else:
         logger.warning("Skipped too many bases, surrendering...")

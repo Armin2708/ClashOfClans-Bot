@@ -95,23 +95,56 @@ class ConnectionPanel(QWidget):
 
     def _on_detect_resolution(self):
         adb = self._adb_path.text().strip() or "adb"
+        addr = self._device_addr.text().strip()
 
+        def _build_cmd(*args):
+            cmd = [adb]
+            if addr:
+                cmd += ["-s", addr]
+            cmd += list(args)
+            return cmd
+
+        w, h = None, None
         try:
+            # Method 1: wm size
             result = subprocess.run(
-                [adb, "shell", "wm", "size"],
+                _build_cmd("shell", "wm", "size"),
                 capture_output=True, text=True, timeout=10,
             )
-            output = result.stdout.strip()
-            match = re.search(r"(\d+)x(\d+)", output)
+            match = re.search(r"(\d+)x(\d+)", result.stdout)
             if match:
                 w, h = int(match.group(1)), int(match.group(2))
+
+            # Method 2: dumpsys display
+            if not w:
+                result = subprocess.run(
+                    _build_cmd("shell", "dumpsys", "display"),
+                    capture_output=True, text=True, timeout=10,
+                )
+                match = re.search(r"real\s+(\d+)\s*x\s*(\d+)", result.stdout)
+                if match:
+                    w, h = int(match.group(1)), int(match.group(2))
+
+            # Method 3: screenshot dimensions
+            if not w:
+                result = subprocess.run(
+                    _build_cmd("exec-out", "screencap", "-p"),
+                    capture_output=True, timeout=10,
+                )
+                if result.stdout:
+                    from PIL import Image
+                    import io
+                    img = Image.open(io.BytesIO(result.stdout))
+                    w, h = img.size
+
+            if w and h:
                 self._settings.set("screen_width", w)
                 self._settings.set("screen_height", h)
                 self._settings.save()
                 self._status.setText(f"Resolution: {w}x{h}")
                 self._status.setStyleSheet("color: #34C759; font-weight: 600;")
             else:
-                self._status.setText(f"Could not parse resolution: {output}")
+                self._status.setText("Could not detect resolution")
                 self._status.setStyleSheet("color: #FF3B30; font-weight: 600;")
         except FileNotFoundError:
             self._status.setText(f"ADB not found at '{adb}'")

@@ -189,7 +189,10 @@ class WallUpgradeStrategy(UpgradeStrategy):
         img2 = screenshot()
 
         if GEM_TEMPLATE is not None:
-            dialog_region = img2[600:1400, :]
+            from bot.config import SCREEN_HEIGHT
+            from bot.settings import BASE_HEIGHT
+            sy = SCREEN_HEIGHT / BASE_HEIGHT
+            dialog_region = img2[int(600 * sy):int(1400 * sy), :]
             if find_template(dialog_region, GEM_TEMPLATE, threshold=0.85):
                 logger.warning("[%s] Gem cost detected - canceling!", building.name)
                 tap(*EMPTY_TAP, delay=0.5)

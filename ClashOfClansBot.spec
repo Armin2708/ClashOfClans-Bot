@@ -3,6 +3,7 @@
 
 import os
 
+VERSION = os.environ.get('VERSION', '1.0.0')
 block_cipher = None
 
 # Collect all template images
@@ -121,8 +122,8 @@ app = BUNDLE(
     info_plist={
         'CFBundleName': 'ClashOfClansBot',
         'CFBundleDisplayName': 'Clash of Clans Bot',
-        'CFBundleVersion': '1.0.0',
-        'CFBundleShortVersionString': '1.0.0',
+        'CFBundleVersion': VERSION,
+        'CFBundleShortVersionString': VERSION,
         'NSHighResolutionCapable': True,
         'LSMinimumSystemVersion': '10.15',
     },

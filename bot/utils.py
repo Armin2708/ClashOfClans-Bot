@@ -14,13 +14,14 @@ def resource_path(relative_path):
 
 def find_template(img, template, threshold=None):
     """Find a template in the image using grayscale matching.
+    Tries a few scales around 1.0 to handle slight size mismatches
+    from resolution scaling.
     Returns (x, y) center or None."""
     if template is None:
         return None
     if threshold is None:
         threshold = TEMPLATE_THRESHOLD
 
-    # Convert both to grayscale for faster matching
     if len(img.shape) == 3:
         img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     else:
@@ -31,11 +32,32 @@ def find_template(img, template, threshold=None):
     else:
         tmpl_gray = template
 
-    result = cv2.matchTemplate(img_gray, tmpl_gray, cv2.TM_CCOEFF_NORMED)
-    _, max_val, _, max_loc = cv2.minMaxLoc(result)
-    if max_val >= threshold:
-        h, w = tmpl_gray.shape[:2]
-        return (max_loc[0] + w // 2, max_loc[1] + h // 2)
+    best_val = 0
+    best_loc = None
+    best_shape = tmpl_gray.shape[:2]
+
+    for scale in (1.0, 0.95, 1.05, 0.9, 1.1):
+        if scale == 1.0:
+            scaled = tmpl_gray
+        else:
+            h, w = tmpl_gray.shape[:2]
+            sw, sh = max(1, int(w * scale)), max(1, int(h * scale))
+            if sh > img_gray.shape[0] or sw > img_gray.shape[1]:
+                continue
+            scaled = cv2.resize(tmpl_gray, (sw, sh), interpolation=cv2.INTER_AREA)
+
+        result = cv2.matchTemplate(img_gray, scaled, cv2.TM_CCOEFF_NORMED)
+        _, max_val, _, max_loc = cv2.minMaxLoc(result)
+        if max_val > best_val:
+            best_val = max_val
+            best_loc = max_loc
+            best_shape = scaled.shape[:2]
+        if best_val >= threshold:
+            break
+
+    if best_val >= threshold:
+        h, w = best_shape
+        return (best_loc[0] + w // 2, best_loc[1] + h // 2)
     return None
 
 

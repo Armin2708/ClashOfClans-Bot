@@ -14,6 +14,7 @@ Performance notes:
 
 import cv2
 import numpy as np
+import os
 import re
 import logging
 import pytesseract
@@ -34,7 +35,7 @@ from bot.config import (
     TROOP_SLOT_MIN_ASPECT, TROOP_SLOT_MAX_ASPECT,
     TROOP_SLOT_MIN_DIST, TROOP_SLOT_GRAY_THRESH,
     TROOP_BAR_X_START, TROOP_BAR_X_END,
-    BUTTON_ROIS,
+    BUTTON_ROIS, SCREEN_WIDTH, SCREEN_HEIGHT,
 )
 
 
@@ -53,6 +54,7 @@ def _load_templates():
         "stars_screen", "return_home", "upgrade_wall",
         "confirm_upgrade", "gem_cost", "next_base",
         "end_battle", "close_x", "okay_button", "later_button",
+        "loot_gold", "loot_elixir",
     ]
     paths = {
         "attack_button": "templates/buttons/attack_button.png",
@@ -68,17 +70,122 @@ def _load_templates():
         "close_x": "templates/popups/close_x.png",
         "okay_button": "templates/popups/okay_button.png",
         "later_button": "templates/popups/later_button.png",
+        "loot_gold": "templates/buttons/loot_gold.png",
+        "loot_elixir": "templates/buttons/loot_elixir.png",
     }
+
+    # Scale templates to match current resolution if different from base
+    from bot.settings import BASE_WIDTH, BASE_HEIGHT
+    rx = SCREEN_WIDTH / BASE_WIDTH
+    ry = SCREEN_HEIGHT / BASE_HEIGHT
+    need_scale = (rx != 1.0 or ry != 1.0)
+    if need_scale:
+        logger.info("Scaling templates by %.2fx%.2f for %dx%d", rx, ry, SCREEN_WIDTH, SCREEN_HEIGHT)
 
     _TEMPLATES = {}
     _TEMPLATES_GRAY = {}
     for name in names:
         bgr = load_template(paths[name])
+        if bgr is not None and need_scale:
+            h, w = bgr.shape[:2]
+            new_w, new_h = max(1, int(w * rx)), max(1, int(h * ry))
+            bgr = cv2.resize(bgr, (new_w, new_h), interpolation=cv2.INTER_AREA)
         _TEMPLATES[name] = bgr
         if bgr is not None:
             _TEMPLATES_GRAY[name] = cv2.cvtColor(bgr, cv2.COLOR_BGR2GRAY)
         else:
             _TEMPLATES_GRAY[name] = None
+
+
+def _reload_template(name):
+    """Reload a single template from disk into the in-memory caches."""
+    global _TEMPLATES, _TEMPLATES_GRAY
+    if _TEMPLATES is None:
+        _load_templates()
+        return
+
+    paths = {
+        "next_base": "templates/buttons/next_base.png",
+    }
+    path = paths.get(name)
+    if not path:
+        return
+
+    from bot.settings import BASE_WIDTH, BASE_HEIGHT
+    rx = SCREEN_WIDTH / BASE_WIDTH
+    ry = SCREEN_HEIGHT / BASE_HEIGHT
+
+    bgr = load_template(path)
+    if bgr is not None and (rx != 1.0 or ry != 1.0):
+        h, w = bgr.shape[:2]
+        new_w, new_h = max(1, int(w * rx)), max(1, int(h * ry))
+        bgr = cv2.resize(bgr, (new_w, new_h), interpolation=cv2.INTER_AREA)
+    _TEMPLATES[name] = bgr
+    if bgr is not None:
+        _TEMPLATES_GRAY[name] = cv2.cvtColor(bgr, cv2.COLOR_BGR2GRAY)
+    else:
+        _TEMPLATES_GRAY[name] = None
+
+
+# Crop coordinates for auto-capture (at base 2560x1440 resolution).
+# These define a tight region around the button content, smaller than the
+# search ROI so template matching has room to locate it.
+_AUTO_CAPTURE_REGIONS = {
+    "next_base": (2250, 1020, 2490, 1160),  # matches extract_templates.py
+}
+
+_auto_captured = set()  # track which templates have been captured this session
+
+
+def auto_capture_template(img, button_name):
+    """
+    Crop a button template from a live screenshot and save it to disk.
+    Coordinates are scaled from base resolution to match the screenshot.
+    The saved template is stored at base resolution so _load_templates()
+    can scale it correctly on any device.
+
+    Returns True if a template was captured, False otherwise.
+    """
+    if button_name in _auto_captured:
+        return False
+
+    region = _AUTO_CAPTURE_REGIONS.get(button_name)
+    if not region:
+        return False
+
+    from bot.settings import BASE_WIDTH, BASE_HEIGHT
+    rx = SCREEN_WIDTH / BASE_WIDTH
+    ry = SCREEN_HEIGHT / BASE_HEIGHT
+
+    # Scale crop coordinates to actual screen resolution
+    bx1, by1, bx2, by2 = region
+    x1, y1 = int(bx1 * rx), int(by1 * ry)
+    x2, y2 = int(bx2 * rx), int(by2 * ry)
+
+    h, w = img.shape[:2]
+    x1, y1 = max(0, x1), max(0, y1)
+    x2, y2 = min(w, x2), min(h, y2)
+
+    crop = img[y1:y2, x1:x2]
+    if crop.size == 0:
+        logger.warning("Auto-capture: empty crop for %s", button_name)
+        return False
+
+    # Resize back to base resolution dimensions for consistent storage
+    base_w = bx2 - bx1
+    base_h = by2 - by1
+    if rx != 1.0 or ry != 1.0:
+        crop = cv2.resize(crop, (base_w, base_h), interpolation=cv2.INTER_AREA)
+
+    path = f"templates/buttons/{button_name}.png"
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    cv2.imwrite(path, crop)
+    logger.info("Auto-captured template: %s (%dx%d)", path, base_w, base_h)
+
+    # Reload into memory
+    _reload_template(button_name)
+    _auto_captured.add(button_name)
+    return True
 
 
 def get_template(name):
@@ -99,10 +206,18 @@ def _get_template_gray(name):
 def get_townhall_templates():
     global _TOWNHALL_TEMPLATES
     if _TOWNHALL_TEMPLATES is None:
+        from bot.settings import BASE_WIDTH, BASE_HEIGHT
+        rx = SCREEN_WIDTH / BASE_WIDTH
+        ry = SCREEN_HEIGHT / BASE_HEIGHT
+        need_scale = (rx != 1.0 or ry != 1.0)
         _TOWNHALL_TEMPLATES = []
         for i in range(7, 17):
             t = load_template(f"templates/townhall/th_{i}.png")
             if t is not None:
+                if need_scale:
+                    h, w = t.shape[:2]
+                    t = cv2.resize(t, (max(1, int(w * rx)), max(1, int(h * ry))),
+                                   interpolation=cv2.INTER_AREA)
                 _TOWNHALL_TEMPLATES.append(t)
     return _TOWNHALL_TEMPLATES
 
@@ -136,7 +251,16 @@ def _find_in_roi(img_gray, button_name, threshold):
     roi = BUTTON_ROIS.get(button_name)
     if roi:
         x1, y1, x2, y2 = roi
+        # Clamp ROI to image bounds
+        ih, iw = img_gray.shape[:2]
+        x1, y1 = max(0, x1), max(0, y1)
+        x2, y2 = min(iw, x2), min(ih, y2)
         crop = img_gray[y1:y2, x1:x2]
+        th, tw = tmpl.shape[:2]
+        if crop.shape[0] < th or crop.shape[1] < tw:
+            # ROI too small for template — fall back to full image
+            crop = img_gray
+            x1, y1 = 0, 0
         result = cv2.matchTemplate(crop, tmpl, cv2.TM_CCOEFF_NORMED)
         _, max_val, _, max_loc = cv2.minMaxLoc(result)
         if max_val >= threshold:
@@ -179,8 +303,12 @@ def detect_screen_state(img):
     if _find_in_roi(gray, "next_base", th):
         return GameState.SCOUTING
 
-    # End Battle button = active combat (troops deployed)
+    # End Battle button appears on BOTH scouting and active battle screens.
+    # Distinguish by checking for enemy loot icons (only on scouting screen).
     if _find_in_roi(gray, "end_battle", th):
+        if (_find_in_roi(gray, "loot_gold", th) or
+                _find_in_roi(gray, "loot_elixir", th)):
+            return GameState.SCOUTING
         return GameState.BATTLE_ACTIVE
 
     # Start Battle / Attack on army screen (green button bottom-right)
@@ -204,12 +332,22 @@ _DIGIT_TEMPLATES = None
 
 
 def _load_digit_templates():
-    """Load digit templates 0-9 from templates/digits/ as grayscale."""
+    """Load digit templates 0-9 from templates/digits/ as grayscale.
+    Scales them to match current screen resolution."""
     global _DIGIT_TEMPLATES
+    from bot.settings import BASE_WIDTH, BASE_HEIGHT
+    rx = SCREEN_WIDTH / BASE_WIDTH
+    ry = SCREEN_HEIGHT / BASE_HEIGHT
+    need_scale = (rx != 1.0 or ry != 1.0)
+
     _DIGIT_TEMPLATES = {}
     for d in range(10):
         t = load_template(f"templates/digits/{d}.png")
         if t is not None:
+            if need_scale:
+                h, w = t.shape[:2]
+                new_w, new_h = max(1, int(w * rx)), max(1, int(h * ry))
+                t = cv2.resize(t, (new_w, new_h), interpolation=cv2.INTER_AREA)
             _DIGIT_TEMPLATES[d] = cv2.cvtColor(t, cv2.COLOR_BGR2GRAY)
     if _DIGIT_TEMPLATES:
         logger.info("Loaded digit templates: %s", sorted(_DIGIT_TEMPLATES.keys()))
@@ -400,13 +538,20 @@ def detect_walls(img):
     gold_mask = cv2.inRange(hsv, gold_lower, gold_upper)
     contours, _ = cv2.findContours(gold_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
+    # Scale area thresholds to current resolution
+    from bot.settings import BASE_WIDTH, BASE_HEIGHT
+    area_scale = (SCREEN_WIDTH * SCREEN_HEIGHT) / (BASE_WIDTH * BASE_HEIGHT)
+    min_wall_area = int(80 * area_scale)
+    max_wall_area = int(1000 * area_scale)
+    coord_scale = SCREEN_WIDTH / BASE_WIDTH
+    neighbor_dist = int(100 * coord_scale)
+    strict_dist = int(60 * coord_scale)
+
     for c in contours:
         area = cv2.contourArea(c)
-        # Wall gold domes are ~100-900 px area depending on zoom level
-        if 80 < area < 1000:
+        if min_wall_area < area < max_wall_area:
             x, y, w, h = cv2.boundingRect(c)
             aspect = w / max(h, 1)
-            # Wall domes are roughly square (aspect 0.7-2.0)
             if 0.7 < aspect < 2.0:
                 cx = x + w // 2 + gx1
                 cy = y + h // 2 + gy1
@@ -415,29 +560,23 @@ def detect_walls(img):
                     wall_positions.append((cx, cy))
 
     # Filter: only keep positions that have at least 1 neighbor nearby
-    # This removes isolated false positives on buildings.
-    # If we have many raw detections (5+), they're almost certainly real walls,
-    # so use a lenient filter. For few detections, require closer neighbors.
-    NEIGHBOR_DIST = 100
     MIN_NEIGHBORS = 1
     if len(wall_positions) >= 5:
-        # Enough detections to be confident — just filter obvious outliers
         filtered = []
         for (cx, cy) in wall_positions:
             neighbors = sum(1 for (px, py) in wall_positions
                             if (cx, cy) != (px, py)
-                            and abs(cx - px) < NEIGHBOR_DIST
-                            and abs(cy - py) < NEIGHBOR_DIST)
+                            and abs(cx - px) < neighbor_dist
+                            and abs(cy - py) < neighbor_dist)
             if neighbors >= MIN_NEIGHBORS:
                 filtered.append((cx, cy))
     else:
-        # Few detections — be stricter to avoid false positives
         filtered = []
         for (cx, cy) in wall_positions:
             neighbors = sum(1 for (px, py) in wall_positions
                             if (cx, cy) != (px, py)
-                            and abs(cx - px) < 60
-                            and abs(cy - py) < 60)
+                            and abs(cx - px) < strict_dist
+                            and abs(cy - py) < strict_dist)
             if neighbors >= 2:
                 filtered.append((cx, cy))
 
@@ -450,7 +589,20 @@ def detect_walls(img):
 # ─── BUTTON FINDING ──────────────────────────────────────────
 
 def find_button(img, button_name):
-    """Find a button on screen by template. Returns (x, y) or None."""
+    """Find a button on screen by template. Returns (x, y) or None.
+    Uses the ROI region when available for consistency with detect_screen_state().
+    """
+    # Try ROI-based matching first (same path as detect_screen_state)
+    roi = BUTTON_ROIS.get(button_name)
+    if roi:
+        if len(img.shape) == 3:
+            gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        else:
+            gray = img
+        result = _find_in_roi(gray, button_name, TEMPLATE_THRESHOLD)
+        if result:
+            return result
+    # Fall back to full-image multi-scale matching
     return find_template(img, get_template(button_name))
 
 

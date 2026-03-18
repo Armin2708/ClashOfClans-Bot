@@ -14,7 +14,7 @@
 set -e
 
 APP_NAME="ClashOfClansBot"
-VERSION="1.0.0"
+VERSION="${VERSION:-1.0.0}"
 TOOLS_DIR="tools"
 
 echo "=== Step 1: Clean previous builds ==="
@@ -70,30 +70,37 @@ else
             echo "Bundled: ${TOOLS_DIR}/tessdata/"
         fi
 
-        # Copy dylib dependencies so tesseract works outside of Homebrew
+        # Copy dylib dependencies so tesseract works outside of Homebrew.
+        # Use @loader_path so libs resolve relative to the binary/dylib that
+        # loads them, not the PyInstaller executable (which is in a different dir).
         echo "Bundling Tesseract dylib dependencies..."
         TESS_LIBS=$(otool -L "${TOOLS_DIR}/tesseract" | grep -E '/opt|/usr/local' | awk '{print $1}')
         for lib in $TESS_LIBS; do
             if [ -f "$lib" ]; then
                 LIB_NAME=$(basename "$lib")
                 cp "$lib" "${TOOLS_DIR}/${LIB_NAME}"
-                install_name_tool -change "$lib" "@executable_path/${LIB_NAME}" "${TOOLS_DIR}/tesseract" 2>/dev/null || true
+                install_name_tool -change "$lib" "@loader_path/${LIB_NAME}" "${TOOLS_DIR}/tesseract" 2>/dev/null || true
             fi
         done
 
-        # Recursively fix dependencies (one level deep is usually enough)
-        for bundled_lib in "${TOOLS_DIR}"/*.dylib; do
-            [ -f "$bundled_lib" ] || continue
-            DEP_LIBS=$(otool -L "$bundled_lib" | grep -E '/opt|/usr/local' | awk '{print $1}')
-            for dep in $DEP_LIBS; do
-                if [ -f "$dep" ]; then
-                    DEP_NAME=$(basename "$dep")
-                    if [ ! -f "${TOOLS_DIR}/${DEP_NAME}" ]; then
-                        cp "$dep" "${TOOLS_DIR}/${DEP_NAME}"
+        # Recursively fix dependencies (up to 3 levels deep for full chain)
+        for _pass in 1 2 3; do
+            CHANGED=0
+            for bundled_lib in "${TOOLS_DIR}"/*.dylib; do
+                [ -f "$bundled_lib" ] || continue
+                DEP_LIBS=$(otool -L "$bundled_lib" | grep -E '/opt|/usr/local' | awk '{print $1}')
+                for dep in $DEP_LIBS; do
+                    if [ -f "$dep" ]; then
+                        DEP_NAME=$(basename "$dep")
+                        if [ ! -f "${TOOLS_DIR}/${DEP_NAME}" ]; then
+                            cp "$dep" "${TOOLS_DIR}/${DEP_NAME}"
+                            CHANGED=1
+                        fi
+                        install_name_tool -change "$dep" "@loader_path/${DEP_NAME}" "$bundled_lib" 2>/dev/null || true
                     fi
-                    install_name_tool -change "$dep" "@executable_path/${DEP_NAME}" "$bundled_lib" 2>/dev/null || true
-                fi
+                done
             done
+            [ "$CHANGED" -eq 0 ] && break
         done
         echo "Dylib dependencies bundled."
     else
@@ -101,14 +108,37 @@ else
     fi
 fi
 
+# Export version so bot/updater.py and .spec pick it up at build time
+export VERSION
+export APP_VERSION="${VERSION}"
+
 echo "=== Step 4: Build .app bundle with PyInstaller ==="
-pyinstaller --noconfirm "${APP_NAME}.spec"
+# Use venv pyinstaller if available, otherwise fall back to PATH
+if [ -x ".venv/bin/pyinstaller" ]; then
+    .venv/bin/pyinstaller --noconfirm "${APP_NAME}.spec"
+else
+    pyinstaller --noconfirm "${APP_NAME}.spec"
+fi
 
 echo "=== Step 5: Verify .app was created ==="
 if [ ! -d "dist/${APP_NAME}.app" ]; then
     echo "ERROR: dist/${APP_NAME}.app not found. Build failed."
     exit 1
 fi
+
+echo "=== Step 5b: Ad-hoc code signing ==="
+# macOS adds synthetic FinderInfo xattrs to .framework dirs which break
+# codesign --deep. Fix: sign inner frameworks individually, strip the
+# top-level FinderInfo, then sign the outer app without --deep.
+find "dist/${APP_NAME}.app/Contents/Frameworks" -name "*.framework" -type d \
+    -exec codesign --force -s - {} \; 2>/dev/null || true
+find "dist/${APP_NAME}.app" -name "*.dylib" -type f \
+    -exec codesign --force -s - {} \; 2>/dev/null || true
+find "dist/${APP_NAME}.app" -name "*.so" -type f \
+    -exec codesign --force -s - {} \; 2>/dev/null || true
+xattr -cr "dist/${APP_NAME}.app"
+codesign --force -s - "dist/${APP_NAME}.app"
+echo "Ad-hoc signed: dist/${APP_NAME}.app"
 
 # Show what's inside the tools bundle
 echo ""

@@ -2,6 +2,7 @@
 
 import json
 import logging
+import os
 import urllib.request
 import webbrowser
 from packaging.version import Version
@@ -12,7 +13,7 @@ from PySide6.QtCore import QThread, Signal, QObject
 logger = logging.getLogger("coc.updater")
 
 # Current version — bump this each release to match the GitHub Release tag
-APP_VERSION = "1.0.0"
+APP_VERSION = os.environ.get("APP_VERSION", "1.0.0")
 
 # GitHub repo — releases are checked via the public API (no token needed)
 GITHUB_REPO = "Armin2708/ClashOfClans-Bot"

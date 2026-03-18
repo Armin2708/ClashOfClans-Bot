@@ -7,6 +7,37 @@ import threading
 _SETTINGS_DIR = os.path.expanduser("~/.cocbot")
 _SETTINGS_FILE = os.path.join(_SETTINGS_DIR, "settings.json")
 
+# Base resolution all pixel coordinates are authored for
+BASE_WIDTH = 2560
+BASE_HEIGHT = 1440
+
+# Settings keys containing pixel coordinates that must be scaled.
+# Keys with (x, y, x, y) or (x, y) tuples — scale x by width ratio, y by height ratio
+_COORDINATE_KEYS = {
+    "gold_region", "elixir_region", "game_area", "empty_tap",
+    "enemy_loot_x_range",  # x-only pair
+    "enemy_loot_y_range",  # y-only pair
+}
+
+# Keys with single pixel values that scale by width ratio
+_PIXEL_X_KEYS = {
+    "fallback_troop_x_start", "fallback_troop_x_spacing",
+    "troop_bar_x_start", "troop_bar_x_end",
+    "deploy_swipe_x1", "deploy_swipe_x2",
+    "wall_dedup_dist", "wall_sort_row_height",
+}
+
+# Keys with single pixel values that scale by height ratio
+_PIXEL_Y_KEYS = {
+    "enemy_loot_strip_height", "enemy_loot_y_step", "enemy_loot_y_dedup",
+    "deploy_swipe_y1", "deploy_swipe_y2",
+}
+
+# Keys with pixel area values that scale by (width_ratio * height_ratio)
+_PIXEL_AREA_KEYS = {
+    "troop_slot_min_area", "troop_slot_max_area",
+}
+
 DEFAULTS = {
     # Screen resolution
     "screen_width": 2560,
@@ -45,6 +76,8 @@ DEFAULTS = {
         "return_home":    [800, 900, 1700, 1400],
         "next_base":      [2000, 950, 2560, 1440],
         "end_battle":     [0, 1000, 500, 1440],
+        "loot_gold":      [0, 100, 200, 350],
+        "loot_elixir":    [0, 200, 200, 450],
     },
 
     # Resource regions
