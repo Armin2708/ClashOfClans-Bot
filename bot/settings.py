@@ -129,6 +129,10 @@ DEFAULTS = {
 
     # Discord
     "discord_webhook_url": "",
+    "discord_enabled": False,
+
+    # Onboarding
+    "onboarding_completed": False,
 
     # Crash recovery
     "circuit_breaker_max_failures": 3,

@@ -5,18 +5,29 @@ import json
 import logging
 import time
 
-import bot.config as config
+from bot.settings import Settings
 
 logger = logging.getLogger("coc.notify")
 
 
 def notify(message, max_retries=2):
-    """Send a message to Discord via webhook with retry logic."""
+    """Send a message to Discord via webhook with retry logic.
+    Silently no-ops if Discord is disabled or no webhook URL is set."""
+    settings = Settings()
+    if not settings.get("discord_enabled", False):
+        logger.debug("Discord disabled, skipping: %s", message)
+        return False
+
+    url = settings.get("discord_webhook_url", "")
+    if not url:
+        logger.debug("No Discord webhook URL configured, skipping: %s", message)
+        return False
+
     for attempt in range(max_retries):
         try:
             data = json.dumps({"content": message}).encode("utf-8")
             req = urllib.request.Request(
-                config.DISCORD_WEBHOOK_URL,
+                url,
                 data=data,
                 headers={
                     "Content-Type": "application/json",
