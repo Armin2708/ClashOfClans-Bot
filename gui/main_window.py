@@ -1,105 +1,127 @@
-"""Main application window — true Liquid Glass with backdrop blur."""
+"""Main application window — Refined Glass with onboarding gate."""
 
 import logging
 
-from PySide6.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QTabWidget, QTabBar
-from PySide6.QtCore import Qt, QPoint, QRectF
-from PySide6.QtGui import QPainter, QLinearGradient, QColor, QPainterPath
+from PySide6.QtWidgets import (
+    QMainWindow, QWidget, QVBoxLayout, QTabWidget, QStackedWidget,
+)
+from PySide6.QtCore import Qt
+from PySide6.QtGui import QPainter, QLinearGradient, QColor
 
 from gui.log_handler import LogSignalEmitter, QtLogHandler
 from gui.bot_worker import BotWorker, BotMode
-from gui.panels.control_panel import ControlPanel
-from gui.panels.connection_panel import ConnectionPanel
-from gui.panels.discord_panel import DiscordPanel
-from gui.panels.resource_panel import ResourcePanel
+from gui.panels.control_panel import DashboardPanel
+from gui.panels.settings_panel import SettingsPanel
 from gui.panels.log_panel import LogPanel
+from gui.onboarding import OnboardingWidget
+from bot.settings import Settings
 from bot.updater import UpdateChecker
 
 
 class _GradientBackground(QWidget):
-    """Paints a vivid iOS 26-style gradient across the entire window."""
-
-    # Soft, muted gradient — cool teal-blue to gentle lavender-rose
-    _STOPS = [
-        (0.00, QColor(70,  110, 170)),   # muted steel blue
-        (0.30, QColor(100, 120, 180)),   # soft periwinkle
-        (0.55, QColor(140, 125, 175)),   # gentle lavender
-        (0.80, QColor(170, 135, 165)),   # dusty mauve
-        (1.00, QColor(185, 150, 160)),   # warm rose-grey
-    ]
+    """Dark gradient background for the app."""
 
     def paintEvent(self, event):
         p = QPainter(self)
         p.setRenderHint(QPainter.RenderHint.Antialiasing)
         grad = QLinearGradient(0, 0, self.width(), self.height())
-        for pos, color in self._STOPS:
-            grad.setColorAt(pos, color)
+        grad.setColorAt(0.0, QColor(25, 25, 45))
+        grad.setColorAt(0.5, QColor(20, 22, 40))
+        grad.setColorAt(1.0, QColor(18, 18, 38))
         p.fillRect(self.rect(), grad)
         p.end()
 
 
 class MainWindow(QMainWindow):
-    """Main window for the Clash of Clans Bot."""
+    """Main window with onboarding gate and 3-tab layout."""
 
     def __init__(self):
         super().__init__()
         self.worker = None
+        self._settings = Settings()
 
         self.setWindowTitle("Clash of Clans Bot")
-        self.setMinimumSize(1100, 750)
+        self.setMinimumSize(900, 650)
 
         # Gradient background
         central = _GradientBackground()
         central.setObjectName("_central")
         self.setCentralWidget(central)
         layout = QVBoxLayout(central)
-        layout.setContentsMargins(12, 10, 12, 12)
-        layout.setSpacing(8)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(0)
 
-        # Control toolbar
-        self.control_panel = ControlPanel()
-        layout.addWidget(self.control_panel)
+        # Stack: onboarding or main app
+        self._stack = QStackedWidget()
+        layout.addWidget(self._stack)
 
-        # Tabs — full height
+        # Onboarding
+        self._onboarding = OnboardingWidget()
+        self._onboarding.completed.connect(self._on_onboarding_done)
+        self._stack.addWidget(self._onboarding)
+
+        # Main app container
+        self._main_widget = QWidget()
+        main_layout = QVBoxLayout(self._main_widget)
+        main_layout.setContentsMargins(12, 10, 12, 12)
+        main_layout.setSpacing(8)
+
+        # Tabs
         self.tabs = QTabWidget()
         self.tabs.setDocumentMode(True)
-        self.tabs.addTab(ConnectionPanel(), "Connection")
-        self.tabs.addTab(DiscordPanel(), "Discord")
-        self.tabs.addTab(ResourcePanel(), "Resources")
+
+        self.dashboard = DashboardPanel()
+        self.tabs.addTab(self.dashboard, "Dashboard")
+
+        self.settings_panel = SettingsPanel()
+        self.tabs.addTab(self.settings_panel, "Settings")
 
         self.log_panel = LogPanel()
         self.tabs.addTab(self.log_panel, "Log")
 
-        layout.addWidget(self.tabs, stretch=1)
+        main_layout.addWidget(self.tabs, stretch=1)
+        self._stack.addWidget(self._main_widget)
 
-        # Wire log panel
-        self.control_panel.set_log_panel(self.log_panel)
+        # Show onboarding or main app
+        if self._settings.get("onboarding_completed", False):
+            self._stack.setCurrentWidget(self._main_widget)
+        else:
+            self._stack.setCurrentWidget(self._onboarding)
 
         # Log handler
         self._log_emitter = LogSignalEmitter()
         self._log_handler = QtLogHandler(self._log_emitter)
         self._log_handler.setLevel(logging.INFO)
         logging.getLogger("coc").addHandler(self._log_handler)
-        self._log_emitter.log_message.connect(self.control_panel.append_log)
+        self._log_emitter.log_message.connect(self._on_log_message)
 
         # Control signals
-        self.control_panel.start_requested.connect(self._start_bot)
-        self.control_panel.stop_requested.connect(self._stop_bot)
-        self.control_panel.pause_requested.connect(self._pause_bot)
-        self.control_panel.resume_requested.connect(self._resume_bot)
+        self.dashboard.start_requested.connect(self._start_bot)
+        self.dashboard.stop_requested.connect(self._stop_bot)
+        self.dashboard.pause_requested.connect(self._pause_bot)
+        self.dashboard.resume_requested.connect(self._resume_bot)
 
         # Update checker
         self._update_checker = UpdateChecker(self)
         self._update_checker.check()
 
+    def _on_onboarding_done(self):
+        self._settings.set("onboarding_completed", True)
+        self._settings.save()
+        self._stack.setCurrentWidget(self._main_widget)
+
+    def _on_log_message(self, line):
+        self.log_panel.append_log(line)
+        self.dashboard.append_activity(line)
+
     def _start_bot(self, mode_name):
         mode = BotMode.FARM if mode_name == "farm" else BotMode.NORMAL
         self.worker = BotWorker(mode)
-        self.worker.status_changed.connect(self.control_panel.update_status)
-        self.worker.resources_updated.connect(self.control_panel.update_resources)
-        self.worker.metrics_updated.connect(self.control_panel.update_metrics)
-        self.worker.error_occurred.connect(self.control_panel.update_status)
-        self.worker.bot_stopped.connect(self.control_panel.on_bot_stopped)
+        self.worker.status_changed.connect(self.dashboard.update_status)
+        self.worker.resources_updated.connect(self.dashboard.update_resources)
+        self.worker.metrics_updated.connect(self.dashboard.update_metrics)
+        self.worker.error_occurred.connect(self.dashboard.update_status)
+        self.worker.bot_stopped.connect(self.dashboard.on_bot_stopped)
         self.worker.start()
 
     def _stop_bot(self):
@@ -121,8 +143,3 @@ class MainWindow(QMainWindow):
             self.worker.stop()
             self.worker.wait(5000)
         event.accept()
-
-    def set_tab_widget(self, index, widget):
-        name = self.tabs.tabText(index)
-        self.tabs.removeTab(index)
-        self.tabs.insertTab(index, widget, name)
