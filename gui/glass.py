@@ -1,30 +1,27 @@
-"""Glass widget stubs — CSS-styled containers, no backdrop blur engine.
-
-These are lightweight QWidget subclasses that rely on the global stylesheet
-for their appearance. The previous blur/specular rendering engine has been
-removed in favor of pure CSS glass effects defined in gui/theme.py.
-"""
+"""Simplified glass widgets — CSS-styled containers without heavy rendering."""
 
 from PySide6.QtWidgets import QWidget
+from PySide6.QtCore import Qt
 
 
 class GlassWidget(QWidget):
-    """Base glass container — styled via the global stylesheet."""
+    """Simple translucent container widget."""
 
     def __init__(self, parent=None, **kw):
         super().__init__(parent)
+        self.setAutoFillBackground(False)
 
 
 class GlassPanel(GlassWidget):
-    """Glass container panel — card/group styling."""
+    """Glass container panel."""
     pass
 
 
 class GlassToolbar(GlassWidget):
-    """Glass toolbar container."""
+    """Glass toolbar."""
     pass
 
 
 class GlassButton(GlassWidget):
-    """Small glass element for buttons/badges."""
+    """Glass button element."""
     pass

@@ -1,46 +1,53 @@
-"""Refined Glass theme — dark translucent panels, no heavy gradients.
+"""Refined Glass theme — clean dark translucent aesthetic.
 
-Design language: dark frosted glass with subtle borders and soft highlights.
-Panels are dark translucent (not bright white), text is high-contrast white.
+Simplified from the original Liquid Glass: no heavy gradients, no backdrop
+blur, no specular highlights. Dark background with subtle glass cards.
 """
 
 from PySide6.QtWidgets import QApplication
 
 # ── Design tokens ────────────────────────────────────────────────────
 _T = {
-    # Glass material — dark translucent
-    "glass":           "rgba(20, 20, 30, 0.65)",
-    "glass_hover":     "rgba(30, 30, 45, 0.72)",
-    "glass_pressed":   "rgba(15, 15, 25, 0.78)",
-    "glass_deep":      "rgba(12, 12, 20, 0.55)",
-    "glass_input":     "rgba(10, 10, 18, 0.50)",
+    # Glass material
+    "glass":           "rgba(255, 255, 255, 0.06)",
+    "glass_hover":     "rgba(255, 255, 255, 0.10)",
+    "glass_pressed":   "rgba(255, 255, 255, 0.14)",
+    "glass_deep":      "rgba(255, 255, 255, 0.04)",
+    "glass_input":     "rgba(255, 255, 255, 0.06)",
 
-    # Borders — subtle frosted edges
-    "border":          "rgba(255, 255, 255, 0.12)",
-    "border_subtle":   "rgba(255, 255, 255, 0.08)",
-    "border_bright":   "rgba(255, 255, 255, 0.22)",
+    # Borders
+    "border":          "rgba(255, 255, 255, 0.10)",
+    "border_subtle":   "rgba(255, 255, 255, 0.06)",
+    "border_bright":   "rgba(255, 255, 255, 0.18)",
+    "border_focus":    "rgba(59, 130, 246, 0.50)",
 
     # Text
-    "text":            "rgba(255, 255, 255, 0.92)",
-    "text2":           "rgba(255, 255, 255, 0.60)",
-    "text3":           "rgba(255, 255, 255, 0.35)",
+    "text":            "rgba(255, 255, 255, 0.90)",
+    "text2":           "rgba(255, 255, 255, 0.45)",
+    "text3":           "rgba(255, 255, 255, 0.25)",
 
-    # Accent
-    "accent":          "#0A84FF",
-    "accent_light":    "rgba(10, 132, 255, 0.22)",
-    "danger":          "#FF453A",
-    "danger_light":    "rgba(255, 69, 58, 0.18)",
-    "success":         "#30D158",
+    # Accent colors
+    "accent":          "#3b82f6",
+    "accent_light":    "rgba(59, 130, 246, 0.15)",
+    "success":         "#22c55e",
+    "success_light":   "rgba(34, 197, 94, 0.12)",
+    "warning":         "#eab308",
+    "warning_light":   "rgba(234, 179, 8, 0.12)",
+    "danger":          "#ef4444",
+    "danger_light":    "rgba(239, 68, 68, 0.12)",
+
+    # Game colors
+    "gold":            "#fbbf24",
+    "elixir":          "#c084fc",
 
     # Radii
-    "r":               "16px",
-    "r_sm":            "10px",
-    "r_lg":            "22px",
-    "r_pill":          "100px",
+    "r":               "10px",
+    "r_sm":            "8px",
+    "r_lg":            "14px",
 
     # Fonts
-    "font":            "'SF Pro Display', 'Helvetica Neue', 'Segoe UI', sans-serif",
-    "mono":            "'SF Mono', Menlo, Consolas, 'Courier New', monospace",
+    "font":            "-apple-system, 'SF Pro Display', 'Helvetica Neue', sans-serif",
+    "mono":            "'SF Mono', Menlo, Consolas, monospace",
 }
 
 # ── Stylesheet ───────────────────────────────────────────────────────
@@ -86,14 +93,14 @@ QTabBar::tab {{
     border-bottom: none;
     border-top-left-radius: {r_sm};
     border-top-right-radius: {r_sm};
-    padding: 7px 22px;
-    margin-right: 3px;
+    padding: 8px 24px;
+    margin-right: 2px;
     font-weight: 500;
-    min-width: 60px;
+    min-width: 70px;
 }}
 
 QTabBar::tab:hover {{
-    background: {glass};
+    background: {glass_hover};
     color: {text};
     border-color: {border};
 }}
@@ -128,29 +135,49 @@ QPushButton:pressed {{
 
 QPushButton:disabled {{
     color: {text3};
-    background: rgba(10, 10, 18, 0.30);
-    border-color: rgba(255, 255, 255, 0.05);
+    background: rgba(255, 255, 255, 0.02);
+    border-color: rgba(255, 255, 255, 0.04);
 }}
 
 QPushButton[class="accent"] {{
     background: {accent_light};
-    border: 1px solid rgba(10, 132, 255, 0.40);
-    color: white;
+    border: 1px solid rgba(59, 130, 246, 0.30);
+    color: {accent};
+    font-weight: 600;
 }}
 
 QPushButton[class="accent"]:hover {{
-    background: rgba(10, 132, 255, 0.32);
-    border-color: rgba(10, 132, 255, 0.55);
+    background: rgba(59, 130, 246, 0.22);
+    border-color: rgba(59, 130, 246, 0.45);
+}}
+
+QPushButton[class="success"] {{
+    background: {success_light};
+    border: 1px solid rgba(34, 197, 94, 0.25);
+    color: {success};
+    font-weight: 600;
+}}
+
+QPushButton[class="success"]:hover {{
+    background: rgba(34, 197, 94, 0.20);
+}}
+
+QPushButton[class="warning"] {{
+    background: {warning_light};
+    border: 1px solid rgba(234, 179, 8, 0.25);
+    color: {warning};
+    font-weight: 600;
 }}
 
 QPushButton[class="danger"] {{
     background: {danger_light};
-    border: 1px solid rgba(255, 69, 58, 0.35);
+    border: 1px solid rgba(239, 68, 68, 0.25);
     color: {danger};
+    font-weight: 600;
 }}
 
 QPushButton[class="danger"]:hover {{
-    background: rgba(255, 69, 58, 0.28);
+    background: rgba(239, 68, 68, 0.20);
 }}
 
 /* ═══════════════════════ LABEL ═══════════════════════ */
@@ -160,7 +187,7 @@ QLabel {{
     padding: 0;
 }}
 
-/* ═══════════════════════ GROUP BOX (glass card) ═══════════════════════ */
+/* ═══════════════════════ GROUP BOX ═══════════════════════ */
 QGroupBox {{
     background: {glass};
     border: 1px solid {border};
@@ -175,21 +202,22 @@ QGroupBox::title {{
     subcontrol-position: top left;
     padding: 2px 14px;
     color: {text2};
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 600;
     letter-spacing: 0.5px;
+    text-transform: uppercase;
 }}
 
 /* ═══════════════════════ TEXT EDIT / LOG ═══════════════════════ */
 QPlainTextEdit {{
-    background: rgba(5, 5, 12, 0.60);
-    color: rgba(220, 230, 245, 0.88);
-    border: 1px solid {border_subtle};
+    background: rgba(0, 0, 0, 0.25);
+    color: rgba(200, 220, 240, 0.85);
+    border: 1px solid {border};
     border-radius: {r_sm};
     padding: 10px;
     font-family: {mono};
     font-size: 12px;
-    selection-background-color: rgba(10, 132, 255, 0.35);
+    selection-background-color: rgba(59, 130, 246, 0.30);
     selection-color: white;
 }}
 
@@ -197,41 +225,41 @@ QPlainTextEdit {{
 QLineEdit {{
     background: {glass_input};
     color: {text};
-    border: 1px solid {border_subtle};
+    border: 1px solid {border};
     border-radius: {r_sm};
     padding: 6px 12px;
     min-height: 28px;
-    selection-background-color: rgba(10, 132, 255, 0.35);
+    selection-background-color: rgba(59, 130, 246, 0.30);
 }}
 
 QLineEdit:focus {{
-    border-color: rgba(10, 132, 255, 0.55);
-    background: rgba(15, 15, 25, 0.60);
+    border-color: {border_focus};
+    background: rgba(255, 255, 255, 0.08);
 }}
 
 QLineEdit:disabled {{
     color: {text3};
-    background: rgba(10, 10, 18, 0.25);
+    background: rgba(255, 255, 255, 0.02);
 }}
 
 /* ═══════════════════════ SPIN BOX ═══════════════════════ */
 QSpinBox, QDoubleSpinBox {{
     background: {glass_input};
     color: {text};
-    border: 1px solid {border_subtle};
+    border: 1px solid {border};
     border-radius: {r_sm};
     padding: 4px 10px;
     min-height: 28px;
 }}
 
 QSpinBox:focus, QDoubleSpinBox:focus {{
-    border-color: rgba(10, 132, 255, 0.55);
-    background: rgba(15, 15, 25, 0.60);
+    border-color: {border_focus};
+    background: rgba(255, 255, 255, 0.08);
 }}
 
 QSpinBox::up-button, QSpinBox::down-button,
 QDoubleSpinBox::up-button, QDoubleSpinBox::down-button {{
-    background: rgba(255, 255, 255, 0.06);
+    background: rgba(255, 255, 255, 0.04);
     border: none;
     border-radius: 4px;
     width: 20px;
@@ -240,7 +268,7 @@ QDoubleSpinBox::up-button, QDoubleSpinBox::down-button {{
 
 QSpinBox::up-button:hover, QSpinBox::down-button:hover,
 QDoubleSpinBox::up-button:hover, QDoubleSpinBox::down-button:hover {{
-    background: rgba(255, 255, 255, 0.14);
+    background: rgba(255, 255, 255, 0.10);
 }}
 
 /* ═══════════════════════ COMBO BOX ═══════════════════════ */
@@ -277,11 +305,11 @@ QComboBox::down-arrow {{
 }}
 
 QComboBox QAbstractItemView {{
-    background: rgba(20, 20, 35, 0.94);
+    background: rgba(25, 25, 45, 0.95);
     color: {text};
-    border: 1px solid {border};
+    border: 1px solid {border_bright};
     border-radius: {r_sm};
-    selection-background-color: rgba(10, 132, 255, 0.30);
+    selection-background-color: rgba(59, 130, 246, 0.25);
     selection-color: white;
     outline: none;
     padding: 4px;
@@ -289,7 +317,7 @@ QComboBox QAbstractItemView {{
 
 QComboBox:disabled {{
     color: {text3};
-    background: rgba(10, 10, 18, 0.30);
+    background: rgba(255, 255, 255, 0.02);
 }}
 
 /* ═══════════════════════ SCROLL ═══════════════════════ */
@@ -304,19 +332,19 @@ QScrollArea > QWidget > QWidget {{
 
 QScrollBar:vertical {{
     background: transparent;
-    width: 7px;
+    width: 6px;
     margin: 4px 1px;
     border: none;
 }}
 
 QScrollBar::handle:vertical {{
-    background: rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.12);
     border-radius: 3px;
     min-height: 30px;
 }}
 
 QScrollBar::handle:vertical:hover {{
-    background: rgba(255, 255, 255, 0.28);
+    background: rgba(255, 255, 255, 0.22);
 }}
 
 QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {{ height: 0; border: none; }}
@@ -324,19 +352,19 @@ QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {{ background: tran
 
 QScrollBar:horizontal {{
     background: transparent;
-    height: 7px;
+    height: 6px;
     margin: 1px 4px;
     border: none;
 }}
 
 QScrollBar::handle:horizontal {{
-    background: rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.12);
     border-radius: 3px;
     min-width: 30px;
 }}
 
 QScrollBar::handle:horizontal:hover {{
-    background: rgba(255, 255, 255, 0.28);
+    background: rgba(255, 255, 255, 0.22);
 }}
 
 QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {{ width: 0; border: none; }}
@@ -348,60 +376,24 @@ QFrame {{
     border: none;
 }}
 
-QFrame[frameShape="4"] {{ background: {border_subtle}; max-height: 1px; }}
-QFrame[frameShape="5"] {{ background: {border_subtle}; max-width: 1px; }}
-
-/* ═══════════════════════ SPLITTER ═══════════════════════ */
-QSplitter::handle {{ background: {border_subtle}; }}
-QSplitter::handle:horizontal {{ width: 1px; }}
-QSplitter::handle:vertical {{ height: 1px; }}
+QFrame[frameShape="4"] {{ background: {border}; max-height: 1px; }}
+QFrame[frameShape="5"] {{ background: {border}; max-width: 1px; }}
 
 /* ═══════════════════════ CHECK BOX ═══════════════════════ */
 QCheckBox {{ background: transparent; spacing: 8px; }}
-QCheckBox::indicator {{ width: 18px; height: 18px; border: 1.5px solid {border}; border-radius: 5px; background: rgba(255,255,255,0.06); }}
+QCheckBox::indicator {{ width: 18px; height: 18px; border: 1.5px solid {border_bright}; border-radius: 5px; background: rgba(255,255,255,0.04); }}
 QCheckBox::indicator:checked {{ background: {accent}; border-color: {accent}; }}
-QCheckBox::indicator:hover {{ border-color: {border_bright}; }}
+QCheckBox::indicator:hover {{ border-color: {border_focus}; }}
 
 /* ═══════════════════════ TOOLTIP ═══════════════════════ */
 QToolTip {{
-    background: rgba(15, 15, 28, 0.94);
+    background: rgba(20, 20, 38, 0.95);
     color: {text};
-    border: 1px solid {border};
-    border-radius: 8px;
+    border: 1px solid {border_bright};
+    border-radius: 6px;
     padding: 6px 12px;
     font-size: 12px;
 }}
-
-/* ═══════════════════════ HEADER / TABLE ═══════════════════════ */
-QHeaderView::section {{
-    background: {glass_deep};
-    color: {text2};
-    border: none;
-    border-right: 1px solid {border_subtle};
-    border-bottom: 1px solid {border_subtle};
-    padding: 6px 12px;
-    font-weight: 600;
-    font-size: 12px;
-}}
-
-QTableView, QTreeView, QListView {{
-    background: rgba(5, 5, 12, 0.45);
-    alternate-background-color: rgba(255, 255, 255, 0.02);
-    border: 1px solid {border_subtle};
-    border-radius: {r_sm};
-    gridline-color: rgba(255, 255, 255, 0.04);
-    selection-background-color: rgba(10, 132, 255, 0.25);
-    selection-color: white;
-    outline: none;
-}}
-
-/* ═══════════════════════ MENU ═══════════════════════ */
-QMenuBar {{ background: transparent; color: {text}; border-bottom: 1px solid {border_subtle}; }}
-QMenuBar::item:selected {{ background: rgba(255,255,255,0.08); border-radius: 6px; }}
-QMenu {{ background: rgba(15,15,28,0.94); color: {text}; border: 1px solid {border}; border-radius: {r_sm}; padding: 4px; }}
-QMenu::item {{ padding: 6px 28px 6px 14px; border-radius: 6px; }}
-QMenu::item:selected {{ background: rgba(10,132,255,0.25); }}
-QMenu::separator {{ height: 1px; background: {border_subtle}; margin: 4px 8px; }}
 
 """.format(**_T)
 
