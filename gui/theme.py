@@ -46,7 +46,7 @@ _T = {
     "r_lg":            "14px",
 
     # Fonts
-    "font":            "-apple-system, 'SF Pro Display', 'Helvetica Neue', sans-serif",
+    "font":            "'Helvetica Neue', 'SF Pro Display', sans-serif",
     "mono":            "'SF Mono', Menlo, Consolas, monospace",
 }
 
