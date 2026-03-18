@@ -9,7 +9,6 @@ Performance notes:
   - All template matching uses grayscale (3x less data than BGR)
   - detect_screen_state() crops to button ROI regions before matching (~100-200x smaller)
   - read_enemy_loot() converts loot area to gray once, early-exits after 2 numbers
-  - Wall templates stored as grayscale for fast matching
 """
 
 import cv2
@@ -24,8 +23,7 @@ from bot.state_machine import GameState
 
 logger = logging.getLogger("coc.vision")
 from bot.config import (
-    GAME_AREA, TEMPLATE_THRESHOLD, SCREEN_DETECT_THRESHOLD,
-    WALL_MATCH_THRESHOLD, WALL_SCALES, WALL_DEDUP_DIST, WALL_SORT_ROW_HEIGHT,
+    TEMPLATE_THRESHOLD, SCREEN_DETECT_THRESHOLD,
     GOLD_REGION, ELIXIR_REGION,
     ENEMY_LOOT_X_RANGE, ENEMY_LOOT_Y_RANGE, ENEMY_LOOT_STRIP_HEIGHT,
     ENEMY_LOOT_Y_STEP, ENEMY_LOOT_Y_DEDUP, ENEMY_LOOT_SCALES,
@@ -51,7 +49,7 @@ def _load_templates():
 
     names = [
         "attack_button", "find_match", "start_battle",
-        "stars_screen", "return_home", "upgrade_wall",
+        "stars_screen", "return_home",
         "confirm_upgrade", "gem_cost", "next_base",
         "end_battle", "close_x", "okay_button", "later_button",
         "loot_gold", "loot_elixir",
@@ -62,7 +60,6 @@ def _load_templates():
         "start_battle": "templates/buttons/start_battle.png",
         "stars_screen": "templates/buttons/stars_screen.png",
         "return_home": "templates/buttons/return_home.png",
-        "upgrade_wall": "templates/buttons/upgrade_wall.png",
         "confirm_upgrade": "templates/buttons/confirm_upgrade.png",
         "gem_cost": "templates/buttons/gem_cost.png",
         "next_base": "templates/buttons/next_base.png",
@@ -514,76 +511,6 @@ def read_enemy_loot(img):
     elixir = numbers_found[1][1] if len(numbers_found) > 1 else 0
 
     return gold, elixir
-
-
-# ─── WALL DETECTION ──────────────────────────────────────────
-
-
-def detect_walls(img):
-    """
-    Detect wall positions using HSV color filtering.
-    Finds gold walls (yellow dome) in the game area.
-    Returns list of (x, y) center coordinates.
-    """
-    gx1, gy1, gx2, gy2 = GAME_AREA
-    game_region = img[gy1:gy2, gx1:gx2]
-    hsv = cv2.cvtColor(game_region, cv2.COLOR_BGR2HSV)
-
-    wall_positions = []
-
-    # Gold walls: distinctive yellow/gold dome
-    # Tight range to avoid matching gold UI elements, coins, etc.
-    gold_lower = np.array([20, 120, 160])
-    gold_upper = np.array([35, 255, 255])
-    gold_mask = cv2.inRange(hsv, gold_lower, gold_upper)
-    contours, _ = cv2.findContours(gold_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-
-    # Scale area thresholds to current resolution
-    from bot.settings import BASE_WIDTH, BASE_HEIGHT
-    area_scale = (SCREEN_WIDTH * SCREEN_HEIGHT) / (BASE_WIDTH * BASE_HEIGHT)
-    min_wall_area = int(80 * area_scale)
-    max_wall_area = int(1000 * area_scale)
-    coord_scale = SCREEN_WIDTH / BASE_WIDTH
-    neighbor_dist = int(100 * coord_scale)
-    strict_dist = int(60 * coord_scale)
-
-    for c in contours:
-        area = cv2.contourArea(c)
-        if min_wall_area < area < max_wall_area:
-            x, y, w, h = cv2.boundingRect(c)
-            aspect = w / max(h, 1)
-            if 0.7 < aspect < 2.0:
-                cx = x + w // 2 + gx1
-                cy = y + h // 2 + gy1
-                if not any(abs(cx - px) < WALL_DEDUP_DIST and abs(cy - py) < WALL_DEDUP_DIST
-                           for px, py in wall_positions):
-                    wall_positions.append((cx, cy))
-
-    # Filter: only keep positions that have at least 1 neighbor nearby
-    MIN_NEIGHBORS = 1
-    if len(wall_positions) >= 5:
-        filtered = []
-        for (cx, cy) in wall_positions:
-            neighbors = sum(1 for (px, py) in wall_positions
-                            if (cx, cy) != (px, py)
-                            and abs(cx - px) < neighbor_dist
-                            and abs(cy - py) < neighbor_dist)
-            if neighbors >= MIN_NEIGHBORS:
-                filtered.append((cx, cy))
-    else:
-        filtered = []
-        for (cx, cy) in wall_positions:
-            neighbors = sum(1 for (px, py) in wall_positions
-                            if (cx, cy) != (px, py)
-                            and abs(cx - px) < strict_dist
-                            and abs(cy - py) < strict_dist)
-            if neighbors >= 2:
-                filtered.append((cx, cy))
-
-    filtered.sort(key=lambda p: (p[1] // WALL_SORT_ROW_HEIGHT, p[0]))
-    logger.info("Detected %d walls by color (%d raw, %d filtered)",
-                len(filtered), len(wall_positions), len(wall_positions) - len(filtered))
-    return filtered
 
 
 # ─── BUTTON FINDING ──────────────────────────────────────────

@@ -2,20 +2,9 @@
 Clash of Clans Automation Bot — Main Loop
 
 Flow:
-  1. Screenshot village -> read resources
-  2. If gold OR elixir is full -> upgrade walls
-     a. Screenshot -> detect walls by color
-     b. Tap wall -> screenshot wall info -> tap upgrade
-     c. Screenshot confirm -> check no gems -> tap confirm
-     d. Re-screenshot to refresh remaining wall positions
-  3. If resources not full (or wall upgrade failed) -> go attack
-     a. Screenshot -> tap Attack -> screenshot -> tap Find a Match
-     b. Screenshot army -> tap Start Battle
-     c. Screenshot enemy base -> read loot
-     d. If loot >= 1M gold or elixir -> deploy troops to top corner
-     e. If loot too low -> tap Next, repeat
-     f. Every 30s screenshot -> check for stars screen
-     g. Stars detected -> tap Return Home
+  1. Ensure game is running and on village screen
+  2. Attack: find a match, scout for loot, deploy troops
+  3. Wait for battle to end, return home
   4. Back to step 1
 """
 
@@ -31,10 +20,9 @@ from bot.vision import (
     validate_critical_templates,
 )
 from bot.resources import get_resources
-from bot.buildings import GOLD_WALL, WallUpgradeStrategy
 from bot.battle import do_attack, return_home, wait_for_battle_end
 from bot.config import (
-    GOLD_STORAGE_FULL, ELIXIR_STORAGE_FULL, LOOP_DELAY, APP_LAUNCH_WAIT, EMPTY_TAP,
+    LOOP_DELAY, APP_LAUNCH_WAIT, EMPTY_TAP,
     CIRCUIT_BREAKER_MAX_FAILURES, CIRCUIT_BREAKER_WINDOW, MAX_UNKNOWN_STATE_STREAK,
     FARM_TARGET_GOLD, FARM_TARGET_ELIXIR,
 )
@@ -70,12 +58,6 @@ logger = logging.getLogger("coc.main")
 
 # Global state tracker
 state_tracker = StateTracker()
-
-# Upgrade strategies — add new Building + Strategy pairs here
-UPGRADE_STRATEGIES = [
-    (GOLD_WALL, WallUpgradeStrategy()),
-]
-
 
 class CircuitBreaker:
     """Track consecutive failures within a time window. Trip if too many."""
@@ -262,36 +244,11 @@ def main():
             logger.info("Checking resources...")
             gold, elixir = get_resources()
 
-            # Step 2: If resources are full, try upgrade strategies
-            if gold >= GOLD_STORAGE_FULL or elixir >= ELIXIR_STORAGE_FULL:
-                logger.info("Resources full! Gold: %d, Elixir: %d", gold, elixir)
-
-                upgraded = False
-                for building, strategy in UPGRADE_STRATEGIES:
-                    if strategy.should_upgrade(gold, elixir):
-                        logger.info("Upgrading %s...", building.name)
-                        result = strategy.execute_upgrade(building)
-                        if result > 0:
-                            upgraded = True
-                            metrics.record_wall_upgrade(result)
-                            break
-
-                if not upgraded:
-                    logger.error("All upgrade strategies failed — stopping bot")
-                    notify(f"Bot stopped: upgrade failed. Gold: {gold}, Elixir: {elixir}")
-                    metrics.log_final()
-                    return
-
-                # Re-check resources after upgrading
-                gold, elixir = get_resources()
-
-            # Step 3: If neither resource is full, go attack
-            if gold < GOLD_STORAGE_FULL and elixir < ELIXIR_STORAGE_FULL:
-                logger.info("Resources not full — Gold: %d, Elixir: %d", gold, elixir)
-                logger.info("Going to attack...")
-                attacked = do_attack()
-                if attacked:
-                    metrics.record_attack()
+            # Step 2: Attack
+            logger.info("Going to attack...")
+            attacked = do_attack()
+            if attacked:
+                metrics.record_attack()
 
     except KeyboardInterrupt:
         logger.info("Bot stopped by user (Ctrl+C)")

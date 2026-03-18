@@ -67,10 +67,9 @@ class BotWorker(QThread):
             find_popup, detect_screen_state, validate_critical_templates,
         )
         from bot.resources import get_resources
-        from bot.buildings import GOLD_WALL, WallUpgradeStrategy
         from bot.battle import do_attack, return_home, wait_for_battle_end
         from bot.config import (
-            GOLD_STORAGE_FULL, ELIXIR_STORAGE_FULL, APP_LAUNCH_WAIT, EMPTY_TAP,
+            APP_LAUNCH_WAIT, EMPTY_TAP,
             CIRCUIT_BREAKER_MAX_FAILURES, CIRCUIT_BREAKER_WINDOW,
             MAX_UNKNOWN_STATE_STREAK, FARM_TARGET_GOLD, FARM_TARGET_ELIXIR,
         )
@@ -164,7 +163,6 @@ class BotWorker(QThread):
 
         circuit_breaker = CircuitBreaker(CIRCUIT_BREAKER_MAX_FAILURES, CIRCUIT_BREAKER_WINDOW)
         state_tracker = StateTracker()
-        upgrade_strategies = [(GOLD_WALL, WallUpgradeStrategy())]
 
         try:
             self.status_changed.emit("Starting...")
@@ -280,40 +278,12 @@ class BotWorker(QThread):
                         metrics.record_attack()
 
                 else:
-                    # Normal mode: upgrade walls if full, then attack
-                    if gold >= GOLD_STORAGE_FULL or elixir >= ELIXIR_STORAGE_FULL:
-                        self.status_changed.emit(f"Resources full! Gold: {gold:,}, Elixir: {elixir:,}")
-                        logger.info("Resources full! Gold: %d, Elixir: %d", gold, elixir)
-
-                        upgraded = False
-                        for building, strategy in upgrade_strategies:
-                            if strategy.should_upgrade(gold, elixir):
-                                logger.info("Upgrading %s...", building.name)
-                                self.status_changed.emit(f"Upgrading {building.name}...")
-                                result = strategy.execute_upgrade(building)
-                                if result > 0:
-                                    upgraded = True
-                                    metrics.record_wall_upgrade(result)
-                                    break
-
-                        if not upgraded:
-                            msg = f"All upgrade strategies failed. Gold: {gold}, Elixir: {elixir}"
-                            logger.error(msg)
-                            self.error_occurred.emit(msg)
-                            metrics.log_final()
-                            self.bot_stopped.emit(msg)
-                            return
-
-                        # Re-check resources after upgrading
-                        gold, elixir = get_resources()
-                        self.resources_updated.emit(gold, elixir)
-
-                    if gold < GOLD_STORAGE_FULL and elixir < ELIXIR_STORAGE_FULL:
-                        self.status_changed.emit("Attacking...")
-                        logger.info("Resources not full — going to attack...")
-                        attacked = do_attack()
-                        if attacked:
-                            metrics.record_attack()
+                    # Normal mode: just attack
+                    self.status_changed.emit("Attacking...")
+                    logger.info("Going to attack...")
+                    attacked = do_attack()
+                    if attacked:
+                        metrics.record_attack()
 
             # Clean exit
             reason = "Stopped by user"

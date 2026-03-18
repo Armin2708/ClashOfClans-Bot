@@ -1,0 +1,147 @@
+<h2>Main App Layout — After Onboarding</h2>
+<p class="subtitle">With walls and troops removed, the app is simpler. How should the remaining features be organized?</p>
+
+<div class="cards">
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="background: linear-gradient(135deg, rgba(25,25,45,0.93), rgba(18,18,38,0.96)); border-radius: 12px; padding: 16px; min-height: 280px; font-family: -apple-system, sans-serif; border: 1px solid rgba(255,255,255,0.1);">
+        <!-- Top bar: controls -->
+        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 14px; padding: 10px 14px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px;">
+          <div style="width: 32px; height: 32px; background: linear-gradient(135deg, #22c55e, #16a34a); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 14px;">▶</div>
+          <div style="flex: 1;">
+            <div style="color: rgba(255,255,255,0.9); font-size: 13px; font-weight: 600;">Farming — Attack #47</div>
+            <div style="color: rgba(255,255,255,0.4); font-size: 11px;">Running for 2h 14m</div>
+          </div>
+          <div style="display: flex; gap: 6px;">
+            <div style="padding: 6px 14px; background: rgba(234,179,8,0.1); border: 1px solid rgba(234,179,8,0.2); border-radius: 6px; color: #fbbf24; font-size: 11px; font-weight: 600;">⏸ Pause</div>
+            <div style="padding: 6px 14px; background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.2); border-radius: 6px; color: #f87171; font-size: 11px; font-weight: 600;">■ Stop</div>
+          </div>
+        </div>
+        <!-- Two columns -->
+        <div style="display: flex; gap: 10px;">
+          <!-- Left: resources + settings -->
+          <div style="flex: 1;">
+            <div style="display: flex; gap: 8px; margin-bottom: 10px;">
+              <div style="flex: 1; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07); border-radius: 8px; padding: 10px;">
+                <div style="color: rgba(255,255,255,0.4); font-size: 9px; text-transform: uppercase; letter-spacing: 0.5px;">Gold</div>
+                <div style="color: #fbbf24; font-size: 16px; font-weight: 700;">12.4M</div>
+              </div>
+              <div style="flex: 1; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07); border-radius: 8px; padding: 10px;">
+                <div style="color: rgba(255,255,255,0.4); font-size: 9px; text-transform: uppercase; letter-spacing: 0.5px;">Elixir</div>
+                <div style="color: #c084fc; font-size: 16px; font-weight: 700;">8.7M</div>
+              </div>
+            </div>
+            <div style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07); border-radius: 8px; padding: 10px;">
+              <div style="color: rgba(255,255,255,0.5); font-size: 10px; margin-bottom: 6px;">Min Loot to Attack</div>
+              <div style="height: 4px; background: rgba(255,255,255,0.08); border-radius: 2px;">
+                <div style="height: 100%; width: 60%; background: linear-gradient(90deg, #3b82f6, #8b5cf6); border-radius: 2px;"></div>
+              </div>
+              <div style="color: rgba(255,255,255,0.3); font-size: 9px; margin-top: 4px;">200,000</div>
+            </div>
+          </div>
+          <!-- Right: log -->
+          <div style="flex: 1; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 10px; font-family: monospace;">
+            <div style="color: rgba(255,255,255,0.3); font-size: 9px; margin-bottom: 6px;">ACTIVITY LOG</div>
+            <div style="color: rgba(34,197,94,0.7); font-size: 9px; line-height: 1.6;">
+              12:41 Found base: 340K gold<br>
+              12:41 Attacking...<br>
+              12:42 Attack complete: +312K<br>
+              12:43 Searching for base...
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A. Single Dashboard</h3>
+      <p>Everything on one screen. Controls at top, resources + settings on the left, live log on the right. No tabs, no navigation. Just launch and go.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="background: linear-gradient(135deg, rgba(25,25,45,0.93), rgba(18,18,38,0.96)); border-radius: 12px; padding: 16px; min-height: 280px; font-family: -apple-system, sans-serif; border: 1px solid rgba(255,255,255,0.1);">
+        <!-- Tab bar -->
+        <div style="display: flex; gap: 2px; margin-bottom: 14px; background: rgba(255,255,255,0.04); border-radius: 8px; padding: 3px;">
+          <div style="flex: 1; text-align: center; padding: 8px; background: rgba(255,255,255,0.08); border-radius: 6px; color: rgba(255,255,255,0.9); font-size: 12px; font-weight: 600;">Dashboard</div>
+          <div style="flex: 1; text-align: center; padding: 8px; color: rgba(255,255,255,0.4); font-size: 12px;">Settings</div>
+          <div style="flex: 1; text-align: center; padding: 8px; color: rgba(255,255,255,0.4); font-size: 12px;">Log</div>
+        </div>
+        <!-- Dashboard content -->
+        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 14px; padding: 12px; background: rgba(34,197,94,0.06); border: 1px solid rgba(34,197,94,0.15); border-radius: 10px;">
+          <div style="width: 36px; height: 36px; background: #22c55e; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 16px;">▶</div>
+          <div style="flex: 1;">
+            <div style="color: rgba(255,255,255,0.9); font-size: 14px; font-weight: 600;">Bot Running</div>
+            <div style="color: rgba(255,255,255,0.4); font-size: 11px;">Farming Mode • Attack #47</div>
+          </div>
+          <div style="padding: 8px 16px; background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.2); border-radius: 8px; color: #f87171; font-size: 12px; font-weight: 600;">Stop</div>
+        </div>
+        <div style="display: flex; gap: 10px;">
+          <div style="flex: 1; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07); border-radius: 8px; padding: 12px; text-align: center;">
+            <div style="color: #fbbf24; font-size: 20px; font-weight: 700;">12.4M</div>
+            <div style="color: rgba(255,255,255,0.4); font-size: 10px;">Gold</div>
+          </div>
+          <div style="flex: 1; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07); border-radius: 8px; padding: 12px; text-align: center;">
+            <div style="color: #c084fc; font-size: 20px; font-weight: 700;">8.7M</div>
+            <div style="color: rgba(255,255,255,0.4); font-size: 10px;">Elixir</div>
+          </div>
+          <div style="flex: 1; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07); border-radius: 8px; padding: 12px; text-align: center;">
+            <div style="color: #6ee7b7; font-size: 20px; font-weight: 700;">47</div>
+            <div style="color: rgba(255,255,255,0.4); font-size: 10px;">Attacks</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B. Clean Tabs</h3>
+      <p>Segmented tab bar at top (Dashboard / Settings / Log). Familiar pattern, clean separation. Settings tab holds loot thresholds, ADB, Discord config.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="background: linear-gradient(135deg, rgba(25,25,45,0.93), rgba(18,18,38,0.96)); border-radius: 12px; padding: 0; min-height: 280px; font-family: -apple-system, sans-serif; border: 1px solid rgba(255,255,255,0.1); display: flex; overflow: hidden;">
+        <!-- Icon sidebar -->
+        <div style="width: 52px; background: rgba(0,0,0,0.2); border-right: 1px solid rgba(255,255,255,0.06); display: flex; flex-direction: column; align-items: center; padding: 14px 0; gap: 4px;">
+          <div style="width: 34px; height: 34px; background: rgba(59,130,246,0.15); border: 1px solid rgba(59,130,246,0.3); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; margin-bottom: 2px;">🏠</div>
+          <div style="width: 34px; height: 34px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px;">⚙️</div>
+          <div style="width: 34px; height: 34px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px;">💬</div>
+          <div style="width: 34px; height: 34px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px;">📋</div>
+          <div style="margin-top: auto; width: 34px; height: 34px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px; opacity: 0.4;">❓</div>
+        </div>
+        <!-- Main content -->
+        <div style="flex: 1; padding: 16px;">
+          <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 14px;">
+            <div style="width: 32px; height: 32px; background: #22c55e; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 14px;">▶</div>
+            <div style="flex: 1;">
+              <div style="color: rgba(255,255,255,0.9); font-size: 14px; font-weight: 600;">Farming — Attack #47</div>
+              <div style="color: rgba(255,255,255,0.4); font-size: 11px;">2h 14m elapsed</div>
+            </div>
+            <div style="padding: 6px 14px; background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.2); border-radius: 6px; color: #f87171; font-size: 11px; font-weight: 600;">Stop</div>
+          </div>
+          <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+            <div style="flex: 1; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07); border-radius: 8px; padding: 10px; text-align: center;">
+              <div style="color: #fbbf24; font-size: 18px; font-weight: 700;">12.4M</div>
+              <div style="color: rgba(255,255,255,0.4); font-size: 9px;">Gold</div>
+            </div>
+            <div style="flex: 1; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07); border-radius: 8px; padding: 10px; text-align: center;">
+              <div style="color: #c084fc; font-size: 18px; font-weight: 700;">8.7M</div>
+              <div style="color: rgba(255,255,255,0.4); font-size: 9px;">Elixir</div>
+            </div>
+          </div>
+          <div style="background: rgba(0,0,0,0.15); border: 1px solid rgba(255,255,255,0.05); border-radius: 8px; padding: 10px; font-family: monospace;">
+            <div style="color: rgba(34,197,94,0.6); font-size: 9px; line-height: 1.7;">12:42 Attack complete: +312K<br>12:43 Searching...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C. Icon Sidebar</h3>
+      <p>Narrow icon sidebar on the left (Home, Settings, Discord, Log). Content fills the rest. Extensible if you add features later. Feels like a pro tool.</p>
+    </div>
+  </div>
+</div>
+
+<div class="section" style="margin-top: 20px;">
+  <p class="subtitle">Click your preference, then let me know in the terminal.</p>
+</div>

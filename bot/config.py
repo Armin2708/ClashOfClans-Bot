@@ -8,7 +8,7 @@ from bot.settings import (
 
 # Keys whose values are lists that should become tuples (non-pixel)
 _TUPLE_LIST_KEYS = {
-    "wall_scales", "enemy_loot_scales",
+    "enemy_loot_scales",
 }
 
 # Dict key whose values (lists) should be converted to tuples

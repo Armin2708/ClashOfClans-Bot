@@ -24,7 +24,6 @@ _PIXEL_X_KEYS = {
     "fallback_troop_x_start", "fallback_troop_x_spacing",
     "troop_bar_x_start", "troop_bar_x_end",
     "deploy_swipe_x1", "deploy_swipe_x2",
-    "wall_dedup_dist", "wall_sort_row_height",
 }
 
 # Keys with single pixel values that scale by height ratio
@@ -51,7 +50,6 @@ DEFAULTS = {
     "min_loot_to_attack": 1_000_000,
     "gold_storage_full": 24_000_000,
     "elixir_storage_full": 24_000_000,
-    "max_wall_upgrades": 3,
     "farm_target_gold": 31_000_000,
     "farm_target_elixir": 31_000_000,
 
@@ -65,7 +63,6 @@ DEFAULTS = {
     # Template matching
     "template_threshold": 0.75,
     "screen_detect_threshold": 0.72,
-    "wall_match_threshold": 0.8,
 
     # Button ROI regions
     "button_rois": {
@@ -126,15 +123,12 @@ DEFAULTS = {
 
     # Wall detection
     "game_area": [120, 250, 2400, 1250],
-    "wall_scales": [0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.5],
-    "wall_dedup_dist": 25,
-    "wall_sort_row_height": 30,
 
     # Neutral tap
     "empty_tap": [20, 700],
 
     # Discord
-    "discord_webhook_url": "https://discord.com/api/webhooks/1481205905524785274/Dh9jcn8hiEKfFBFFXNPxGOQ2Tr3gydBb9C6gWH43SaWuH5HiBqzt1sKSI-xXZjqClNHv",
+    "discord_webhook_url": "",
 
     # Crash recovery
     "circuit_breaker_max_failures": 3,

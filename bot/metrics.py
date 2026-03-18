@@ -13,7 +13,6 @@ class Metrics:
     """Track bot performance counters."""
 
     def __init__(self):
-        self.walls_upgraded = 0
         self.bases_attacked = 0
         self.bases_skipped = 0
         self.total_gold_farmed = 0
@@ -22,10 +21,6 @@ class Metrics:
         self._start_time = time.time()
         self._last_log_time = time.time()
         self._lock = threading.Lock()
-
-    def record_wall_upgrade(self, count=1):
-        with self._lock:
-            self.walls_upgraded += count
 
     def record_attack(self, gold=0, elixir=0):
         with self._lock:
@@ -48,7 +43,6 @@ class Metrics:
             minutes = (uptime % 3600) // 60
             return (
                 f"Metrics (uptime {hours}h{minutes}m): "
-                f"walls={self.walls_upgraded}, "
                 f"attacks={self.bases_attacked}, "
                 f"skips={self.bases_skipped}, "
                 f"gold={self.total_gold_farmed:,}, "
