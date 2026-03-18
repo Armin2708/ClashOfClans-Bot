@@ -11,7 +11,6 @@ from gui.bot_worker import BotWorker, BotMode
 from gui.panels.control_panel import ControlPanel
 from gui.panels.connection_panel import ConnectionPanel
 from gui.panels.discord_panel import DiscordPanel
-from gui.panels.army_panel import ArmyPanel
 from gui.panels.resource_panel import ResourcePanel
 from gui.panels.log_panel import LogPanel
 from bot.updater import UpdateChecker
@@ -64,7 +63,6 @@ class MainWindow(QMainWindow):
         # Tabs — full height
         self.tabs = QTabWidget()
         self.tabs.setDocumentMode(True)
-        self.tabs.addTab(ArmyPanel(), "Army")
         self.tabs.addTab(ConnectionPanel(), "Connection")
         self.tabs.addTab(DiscordPanel(), "Discord")
         self.tabs.addTab(ResourcePanel(), "Resources")

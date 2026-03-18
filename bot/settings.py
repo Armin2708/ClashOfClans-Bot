@@ -137,7 +137,6 @@ DEFAULTS = {
 
     # New keys
     "device_address": "",
-    "army_composition": [],
 }
 
 
