@@ -1,38 +1,36 @@
-"""Apple Liquid Glass theme (iOS 26 / macOS Tahoe style).
+"""Refined Glass theme — dark translucent panels, no heavy gradients.
 
-Light translucent glass panels floating over a vibrant gradient background.
-Glass is nearly clear with bright specular edge highlights — the background
-colour bleeds through, giving each panel a tinted, refractive look.
+Design language: dark frosted glass with subtle borders and soft highlights.
+Panels are dark translucent (not bright white), text is high-contrast white.
 """
 
 from PySide6.QtWidgets import QApplication
 
 # ── Design tokens ────────────────────────────────────────────────────
 _T = {
-    # Glass material
-    "glass":           "rgba(255, 255, 255, 0.18)",
-    "glass_hover":     "rgba(255, 255, 255, 0.25)",
-    "glass_pressed":   "rgba(255, 255, 255, 0.30)",
-    "glass_deep":      "rgba(255, 255, 255, 0.12)",
-    "glass_input":     "rgba(255, 255, 255, 0.10)",
+    # Glass material — dark translucent
+    "glass":           "rgba(20, 20, 30, 0.65)",
+    "glass_hover":     "rgba(30, 30, 45, 0.72)",
+    "glass_pressed":   "rgba(15, 15, 25, 0.78)",
+    "glass_deep":      "rgba(12, 12, 20, 0.55)",
+    "glass_input":     "rgba(10, 10, 18, 0.50)",
 
-    # Borders — specular highlight
-    "border":          "rgba(255, 255, 255, 0.35)",
-    "border_subtle":   "rgba(255, 255, 255, 0.20)",
-    "border_bright":   "rgba(255, 255, 255, 0.55)",
+    # Borders — subtle frosted edges
+    "border":          "rgba(255, 255, 255, 0.12)",
+    "border_subtle":   "rgba(255, 255, 255, 0.08)",
+    "border_bright":   "rgba(255, 255, 255, 0.22)",
 
     # Text
-    "text":            "rgba(255, 255, 255, 0.95)",
-    "text2":           "rgba(255, 255, 255, 0.65)",
-    "text3":           "rgba(255, 255, 255, 0.40)",
-    "text_dark":       "rgba(0, 0, 0, 0.70)",
+    "text":            "rgba(255, 255, 255, 0.92)",
+    "text2":           "rgba(255, 255, 255, 0.60)",
+    "text3":           "rgba(255, 255, 255, 0.35)",
 
     # Accent
-    "accent":          "#007AFF",
-    "accent_light":    "rgba(0, 122, 255, 0.25)",
-    "danger":          "#FF3B30",
-    "danger_light":    "rgba(255, 59, 48, 0.20)",
-    "success":         "#34C759",
+    "accent":          "#0A84FF",
+    "accent_light":    "rgba(10, 132, 255, 0.22)",
+    "danger":          "#FF453A",
+    "danger_light":    "rgba(255, 69, 58, 0.18)",
+    "success":         "#30D158",
 
     # Radii
     "r":               "16px",
@@ -41,8 +39,8 @@ _T = {
     "r_pill":          "100px",
 
     # Fonts
-    "font":            "'Helvetica Neue', 'SF Pro Display', 'Segoe UI', sans-serif",
-    "mono":            "Menlo, Consolas, 'Courier New', monospace",
+    "font":            "'SF Pro Display', 'Helvetica Neue', 'Segoe UI', sans-serif",
+    "mono":            "'SF Mono', Menlo, Consolas, 'Courier New', monospace",
 }
 
 # ── Stylesheet ───────────────────────────────────────────────────────
@@ -130,29 +128,29 @@ QPushButton:pressed {{
 
 QPushButton:disabled {{
     color: {text3};
-    background: rgba(255, 255, 255, 0.06);
-    border-color: rgba(255, 255, 255, 0.10);
+    background: rgba(10, 10, 18, 0.30);
+    border-color: rgba(255, 255, 255, 0.05);
 }}
 
 QPushButton[class="accent"] {{
     background: {accent_light};
-    border: 1px solid rgba(0, 122, 255, 0.45);
+    border: 1px solid rgba(10, 132, 255, 0.40);
     color: white;
 }}
 
 QPushButton[class="accent"]:hover {{
-    background: rgba(0, 122, 255, 0.35);
-    border-color: rgba(0, 122, 255, 0.65);
+    background: rgba(10, 132, 255, 0.32);
+    border-color: rgba(10, 132, 255, 0.55);
 }}
 
 QPushButton[class="danger"] {{
     background: {danger_light};
-    border: 1px solid rgba(255, 59, 48, 0.40);
+    border: 1px solid rgba(255, 69, 58, 0.35);
     color: {danger};
 }}
 
 QPushButton[class="danger"]:hover {{
-    background: rgba(255, 59, 48, 0.30);
+    background: rgba(255, 69, 58, 0.28);
 }}
 
 /* ═══════════════════════ LABEL ═══════════════════════ */
@@ -184,14 +182,14 @@ QGroupBox::title {{
 
 /* ═══════════════════════ TEXT EDIT / LOG ═══════════════════════ */
 QPlainTextEdit {{
-    background: rgba(0, 0, 0, 0.20);
-    color: rgba(230, 240, 255, 0.90);
+    background: rgba(5, 5, 12, 0.60);
+    color: rgba(220, 230, 245, 0.88);
     border: 1px solid {border_subtle};
     border-radius: {r_sm};
     padding: 10px;
     font-family: {mono};
     font-size: 12px;
-    selection-background-color: rgba(0, 122, 255, 0.35);
+    selection-background-color: rgba(10, 132, 255, 0.35);
     selection-color: white;
 }}
 
@@ -203,17 +201,17 @@ QLineEdit {{
     border-radius: {r_sm};
     padding: 6px 12px;
     min-height: 28px;
-    selection-background-color: rgba(0, 122, 255, 0.35);
+    selection-background-color: rgba(10, 132, 255, 0.35);
 }}
 
 QLineEdit:focus {{
-    border-color: rgba(0, 122, 255, 0.60);
-    background: rgba(255, 255, 255, 0.14);
+    border-color: rgba(10, 132, 255, 0.55);
+    background: rgba(15, 15, 25, 0.60);
 }}
 
 QLineEdit:disabled {{
     color: {text3};
-    background: rgba(255, 255, 255, 0.04);
+    background: rgba(10, 10, 18, 0.25);
 }}
 
 /* ═══════════════════════ SPIN BOX ═══════════════════════ */
@@ -227,13 +225,13 @@ QSpinBox, QDoubleSpinBox {{
 }}
 
 QSpinBox:focus, QDoubleSpinBox:focus {{
-    border-color: rgba(0, 122, 255, 0.60);
-    background: rgba(255, 255, 255, 0.14);
+    border-color: rgba(10, 132, 255, 0.55);
+    background: rgba(15, 15, 25, 0.60);
 }}
 
 QSpinBox::up-button, QSpinBox::down-button,
 QDoubleSpinBox::up-button, QDoubleSpinBox::down-button {{
-    background: rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.06);
     border: none;
     border-radius: 4px;
     width: 20px;
@@ -242,7 +240,7 @@ QDoubleSpinBox::up-button, QDoubleSpinBox::down-button {{
 
 QSpinBox::up-button:hover, QSpinBox::down-button:hover,
 QDoubleSpinBox::up-button:hover, QDoubleSpinBox::down-button:hover {{
-    background: rgba(255, 255, 255, 0.18);
+    background: rgba(255, 255, 255, 0.14);
 }}
 
 /* ═══════════════════════ COMBO BOX ═══════════════════════ */
@@ -279,11 +277,11 @@ QComboBox::down-arrow {{
 }}
 
 QComboBox QAbstractItemView {{
-    background: rgba(40, 40, 60, 0.92);
+    background: rgba(20, 20, 35, 0.94);
     color: {text};
     border: 1px solid {border};
     border-radius: {r_sm};
-    selection-background-color: rgba(0, 122, 255, 0.30);
+    selection-background-color: rgba(10, 132, 255, 0.30);
     selection-color: white;
     outline: none;
     padding: 4px;
@@ -291,7 +289,7 @@ QComboBox QAbstractItemView {{
 
 QComboBox:disabled {{
     color: {text3};
-    background: rgba(255, 255, 255, 0.06);
+    background: rgba(10, 10, 18, 0.30);
 }}
 
 /* ═══════════════════════ SCROLL ═══════════════════════ */
@@ -312,13 +310,13 @@ QScrollBar:vertical {{
 }}
 
 QScrollBar::handle:vertical {{
-    background: rgba(255, 255, 255, 0.20);
+    background: rgba(255, 255, 255, 0.15);
     border-radius: 3px;
     min-height: 30px;
 }}
 
 QScrollBar::handle:vertical:hover {{
-    background: rgba(255, 255, 255, 0.35);
+    background: rgba(255, 255, 255, 0.28);
 }}
 
 QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {{ height: 0; border: none; }}
@@ -332,13 +330,13 @@ QScrollBar:horizontal {{
 }}
 
 QScrollBar::handle:horizontal {{
-    background: rgba(255, 255, 255, 0.20);
+    background: rgba(255, 255, 255, 0.15);
     border-radius: 3px;
     min-width: 30px;
 }}
 
 QScrollBar::handle:horizontal:hover {{
-    background: rgba(255, 255, 255, 0.35);
+    background: rgba(255, 255, 255, 0.28);
 }}
 
 QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {{ width: 0; border: none; }}
@@ -360,13 +358,13 @@ QSplitter::handle:vertical {{ height: 1px; }}
 
 /* ═══════════════════════ CHECK BOX ═══════════════════════ */
 QCheckBox {{ background: transparent; spacing: 8px; }}
-QCheckBox::indicator {{ width: 18px; height: 18px; border: 1.5px solid {border}; border-radius: 5px; background: rgba(255,255,255,0.08); }}
+QCheckBox::indicator {{ width: 18px; height: 18px; border: 1.5px solid {border}; border-radius: 5px; background: rgba(255,255,255,0.06); }}
 QCheckBox::indicator:checked {{ background: {accent}; border-color: {accent}; }}
 QCheckBox::indicator:hover {{ border-color: {border_bright}; }}
 
 /* ═══════════════════════ TOOLTIP ═══════════════════════ */
 QToolTip {{
-    background: rgba(30, 30, 50, 0.92);
+    background: rgba(15, 15, 28, 0.94);
     color: {text};
     border: 1px solid {border};
     border-radius: 8px;
@@ -387,27 +385,27 @@ QHeaderView::section {{
 }}
 
 QTableView, QTreeView, QListView {{
-    background: rgba(0, 0, 0, 0.12);
-    alternate-background-color: rgba(255, 255, 255, 0.03);
+    background: rgba(5, 5, 12, 0.45);
+    alternate-background-color: rgba(255, 255, 255, 0.02);
     border: 1px solid {border_subtle};
     border-radius: {r_sm};
-    gridline-color: rgba(255, 255, 255, 0.06);
-    selection-background-color: rgba(0, 122, 255, 0.25);
+    gridline-color: rgba(255, 255, 255, 0.04);
+    selection-background-color: rgba(10, 132, 255, 0.25);
     selection-color: white;
     outline: none;
 }}
 
 /* ═══════════════════════ MENU ═══════════════════════ */
 QMenuBar {{ background: transparent; color: {text}; border-bottom: 1px solid {border_subtle}; }}
-QMenuBar::item:selected {{ background: rgba(255,255,255,0.12); border-radius: 6px; }}
-QMenu {{ background: rgba(30,30,50,0.92); color: {text}; border: 1px solid {border}; border-radius: {r_sm}; padding: 4px; }}
+QMenuBar::item:selected {{ background: rgba(255,255,255,0.08); border-radius: 6px; }}
+QMenu {{ background: rgba(15,15,28,0.94); color: {text}; border: 1px solid {border}; border-radius: {r_sm}; padding: 4px; }}
 QMenu::item {{ padding: 6px 28px 6px 14px; border-radius: 6px; }}
-QMenu::item:selected {{ background: rgba(0,122,255,0.25); }}
+QMenu::item:selected {{ background: rgba(10,132,255,0.25); }}
 QMenu::separator {{ height: 1px; background: {border_subtle}; margin: 4px 8px; }}
 
 """.format(**_T)
 
 
 def apply_theme(app: QApplication) -> None:
-    """Apply the Liquid Glass stylesheet globally."""
+    """Apply the Refined Glass stylesheet globally."""
     app.setStyleSheet(_CSS)
