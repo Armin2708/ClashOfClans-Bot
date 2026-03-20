@@ -25,6 +25,12 @@ test_*.png
 .cocbot/
 bot.log
 
+# Secrets / env
+.env
+.env.*
+*.pem
+*.key
+
 # Compiled
 *.so
 *.dylib

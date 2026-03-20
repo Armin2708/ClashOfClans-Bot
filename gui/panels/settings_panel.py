@@ -104,6 +104,7 @@ class SettingsPanel(QWidget):
         discord_form.addRow(self._discord_enabled)
 
         self._webhook_url = QLineEdit()
+        self._webhook_url.setEchoMode(QLineEdit.EchoMode.Password)
         self._webhook_url.setPlaceholderText("https://discord.com/api/webhooks/...")
         self._webhook_url.textChanged.connect(
             lambda t: self._save("discord_webhook_url", t.strip())
