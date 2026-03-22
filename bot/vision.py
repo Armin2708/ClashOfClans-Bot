@@ -18,7 +18,7 @@ import re
 import logging
 import pytesseract
 from bot.screen import screenshot
-from bot.utils import find_template, load_template, load_template_gray, save_debug
+from bot.utils import find_template, load_template, load_template_gray, save_debug, writable_path
 from bot.state_machine import GameState
 
 logger = logging.getLogger("coc.vision")
@@ -174,7 +174,8 @@ def auto_capture_template(img, button_name):
     if rx != 1.0 or ry != 1.0:
         crop = cv2.resize(crop, (base_w, base_h), interpolation=cv2.INTER_AREA)
 
-    path = f"templates/buttons/{button_name}.png"
+    rel_path = f"templates/buttons/{button_name}.png"
+    path = writable_path(rel_path)
     os.makedirs(os.path.dirname(path), exist_ok=True)
     cv2.imwrite(path, crop)
     logger.info("Auto-captured template: %s (%dx%d)", path, base_w, base_h)
