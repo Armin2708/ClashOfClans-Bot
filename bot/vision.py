@@ -146,8 +146,9 @@ def auto_capture_template(img, button_name):
 
     Returns True if a template was captured, False otherwise.
     """
-    if button_name in _auto_captured:
-        return False
+    with _templates_lock:
+        if button_name in _auto_captured:
+            return False
 
     region = _AUTO_CAPTURE_REGIONS.get(button_name)
     if not region:
@@ -185,7 +186,8 @@ def auto_capture_template(img, button_name):
 
     # Reload into memory
     _reload_template(button_name)
-    _auto_captured.add(button_name)
+    with _templates_lock:
+        _auto_captured.add(button_name)
     return True
 
 
