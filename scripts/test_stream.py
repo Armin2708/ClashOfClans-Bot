@@ -1,15 +1,15 @@
 """
 Integration test for the video stream.
-Run with BlueStacks open and ADB connected:
+Run with BlueStacks open:
 
-    python scripts/test_stream.py
+    .venv/bin/python scripts/test_stream.py
 
 Prints achieved FPS and confirms frames are valid BGR numpy arrays.
+BlueStacks window is auto-detected via Quartz.
 """
 
 import sys
 import time
-import numpy as np
 
 sys.path.insert(0, ".")  # run from repo root
 
@@ -19,15 +19,16 @@ from bot.stream import VideoStream
 
 def main():
     settings = Settings()
-    addr = settings.get("device_address", "127.0.0.1:5555")
-    fps  = settings.get("stream_fps", 60)
-    buf  = settings.get("stream_buffer_size", 60)
+    region = settings.get("bluestacks_region")   # None = auto-detect
+    fps = settings.get("stream_fps", 60)
+    buf = settings.get("stream_buffer_size", 60)
 
-    if not addr:
-        addr = "127.0.0.1:5555"
-
-    print(f"Connecting to {addr} @ {fps}fps ...")
-    stream = VideoStream(addr, fps=fps, buffer_size=buf)
+    print(f"Starting stream (auto-detect BlueStacks window) @ {fps}fps ...")
+    stream = VideoStream(
+        region=tuple(region) if region else None,
+        fps=fps,
+        buffer_size=buf,
+    )
     stream.start()
 
     # Wait for first frame
