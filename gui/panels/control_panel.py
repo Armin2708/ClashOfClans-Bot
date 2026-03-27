@@ -2,7 +2,7 @@
 
 from PySide6.QtCore import Signal, Qt
 from PySide6.QtWidgets import (
-    QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QComboBox,
+    QWidget, QVBoxLayout, QHBoxLayout, QPushButton,
     QLabel, QFrame, QPlainTextEdit,
 )
 
@@ -68,16 +68,9 @@ class DashboardPanel(QWidget):
         self.stop_btn.setFixedHeight(36)
         self.stop_btn.setEnabled(False)
 
-        mode_lbl = QLabel("Mode:")
-        self.mode_combo = QComboBox()
-        self.mode_combo.addItems(["Normal", "Farm"])
-        self.mode_combo.setFixedWidth(100)
-
         ctrl_layout.addWidget(self.start_btn)
         ctrl_layout.addWidget(self.pause_btn)
         ctrl_layout.addWidget(self.stop_btn)
-        ctrl_layout.addWidget(mode_lbl)
-        ctrl_layout.addWidget(self.mode_combo)
         ctrl_layout.addStretch()
 
         layout.addLayout(ctrl_layout)
@@ -149,9 +142,8 @@ class DashboardPanel(QWidget):
         self.pause_btn.setEnabled(True)
         self.pause_btn.setText("Pause")
         self._paused = False
-        self.mode_combo.setEnabled(False)
         self._set_status("Starting...", "#eab308")
-        self.start_requested.emit(self.mode_combo.currentText().lower())
+        self.start_requested.emit("farm")
 
     def _on_stop(self):
         self.start_btn.setEnabled(True)
@@ -159,7 +151,6 @@ class DashboardPanel(QWidget):
         self.pause_btn.setEnabled(False)
         self.pause_btn.setText("Pause")
         self._paused = False
-        self.mode_combo.setEnabled(True)
         self._set_status("Stopped", "rgba(255,255,255,0.25)")
         self.stop_requested.emit()
 
@@ -208,5 +199,4 @@ class DashboardPanel(QWidget):
         self.pause_btn.setEnabled(False)
         self.pause_btn.setText("Pause")
         self._paused = False
-        self.mode_combo.setEnabled(True)
         self._set_status(f"Stopped — {reason}", "rgba(255,255,255,0.25)")

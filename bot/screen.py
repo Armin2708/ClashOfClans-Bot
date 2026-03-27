@@ -1,10 +1,9 @@
 import subprocess
-import cv2
 import numpy as np
 import time
 import random
 import logging
-from bot.config import GAME_PACKAGE, SCREEN_WIDTH, SCREEN_HEIGHT
+from bot.config import GAME_PACKAGE
 from bot.settings import Settings
 
 logger = logging.getLogger("coc.screen")

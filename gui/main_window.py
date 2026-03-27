@@ -9,7 +9,7 @@ from PySide6.QtCore import Qt
 from PySide6.QtGui import QPainter, QLinearGradient, QColor
 
 from gui.log_handler import LogSignalEmitter, QtLogHandler
-from gui.bot_worker import BotWorker, BotMode
+from gui.bot_worker import BotWorker
 from gui.panels.control_panel import DashboardPanel
 from gui.panels.settings_panel import SettingsPanel
 from gui.panels.log_panel import LogPanel
@@ -115,20 +115,27 @@ class MainWindow(QMainWindow):
         self.dashboard.append_activity(line)
 
     def _start_bot(self, mode_name):
-        mode = BotMode.FARM if mode_name == "farm" else BotMode.NORMAL
-        self.worker = BotWorker(mode)
+        # Prevent starting a second thread while the previous one is still stopping
+        if self.worker and self.worker.isRunning():
+            return
+        self.worker = BotWorker()
         self.worker.status_changed.connect(self.dashboard.update_status)
         self.worker.resources_updated.connect(self.dashboard.update_resources)
         self.worker.metrics_updated.connect(self.dashboard.update_metrics)
         self.worker.error_occurred.connect(self.dashboard.update_status)
         self.worker.bot_stopped.connect(self.dashboard.on_bot_stopped)
+        self.worker.bot_stopped.connect(self._on_worker_stopped)
         self.worker.start()
+
+    def _on_worker_stopped(self):
+        """Clear worker reference once the thread has actually finished."""
+        self.worker = None
 
     def _stop_bot(self):
         if self.worker and self.worker.isRunning():
             self.worker.stop()
-            self.worker.wait(5000)
-            self.worker = None
+            # Do not wait here — the thread may be mid-attack (2+ min).
+            # _on_worker_stopped clears self.worker when bot_stopped fires.
 
     def _pause_bot(self):
         if self.worker and self.worker.isRunning():
