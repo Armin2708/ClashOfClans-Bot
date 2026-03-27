@@ -4,13 +4,33 @@ import numpy as np
 import time
 import random
 import logging
-from PIL import Image
-import io
-
 from bot.config import GAME_PACKAGE, SCREEN_WIDTH, SCREEN_HEIGHT
 from bot.settings import Settings
 
 logger = logging.getLogger("coc.screen")
+
+from bot.stream import VideoStream
+
+_stream: "VideoStream | None" = None
+
+
+def init_stream() -> None:
+    """Create and start the video stream. Call once before the bot loop."""
+    global _stream
+    settings = Settings()
+    addr = settings.get("device_address", "127.0.0.1:5555")
+    fps  = settings.get("stream_fps", 60)
+    buf  = settings.get("stream_buffer_size", 60)
+    _stream = VideoStream(addr, fps=fps, buffer_size=buf)
+    _stream.start()
+
+
+def shutdown_stream() -> None:
+    """Stop the video stream. Call in the bot's finally block."""
+    global _stream
+    if _stream is not None:
+        _stream.stop()
+        _stream = None
 
 
 def _adb_cmd(*args):
@@ -90,7 +110,7 @@ def check_adb_connection():
 
 
 def _detect_resolution():
-    """Detect emulator resolution via wm size, dumpsys display, or screenshot.
+    """Detect emulator resolution via wm size or dumpsys display.
     Returns (width, height) or (None, None)."""
     # Method 1: wm size
     try:
@@ -118,42 +138,12 @@ def _detect_resolution():
     except Exception:
         pass
 
-    # Method 3: take a screenshot and check its dimensions
-    try:
-        img = screenshot(max_retries=1)
-        if img is not None:
-            h, w = img.shape[:2]
-            return w, h
-    except Exception:
-        pass
-
     return None, None
 
 
-def screenshot(max_retries=3, backoff=1):
-    """Capture the current screen and return as a numpy array (BGR).
-    Retries on failure with exponential backoff."""
-    for attempt in range(max_retries):
-        try:
-            result = subprocess.run(
-                _adb_cmd("exec-out", "screencap", "-p"),
-                capture_output=True,
-                timeout=10
-            )
-            if result.returncode != 0:
-                raise RuntimeError(f"ADB screencap failed: {result.stderr.decode()}")
-            if not result.stdout:
-                raise RuntimeError("ADB returned empty screenshot")
-            image = Image.open(io.BytesIO(result.stdout))
-            return cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
-        except Exception as e:
-            if attempt < max_retries - 1:
-                wait = backoff * (2 ** attempt)
-                logger.warning("Screenshot failed (attempt %d/%d), retrying in %ds: %s",
-                               attempt + 1, max_retries, wait, e)
-                time.sleep(wait)
-            else:
-                raise
+def screenshot() -> np.ndarray:
+    """Return the latest frame from the video stream as a BGR numpy array."""
+    return _stream.get_frame()
 
 
 def tap(x, y, delay=0.3, max_retries=3):
