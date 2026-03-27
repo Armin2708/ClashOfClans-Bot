@@ -61,6 +61,7 @@ class UpdateChecker(QObject):
 
     def _on_result(self, data):
         if not data:
+            self._cleanup()
             return
 
         tag = data.get("tag_name", "")
@@ -68,6 +69,7 @@ class UpdateChecker(QObject):
         html_url = data.get("html_url", "")
 
         if not tag:
+            self._cleanup()
             return
 
         remote_version = tag.lstrip("v")
