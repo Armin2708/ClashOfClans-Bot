@@ -145,6 +145,7 @@ DEFAULTS = {
     # Video stream
     "stream_fps": 60,
     "stream_buffer_size": 60,
+    "bluestacks_region": None,  # [x, y, w, h] — None = auto-detect via Quartz
 }
 
 

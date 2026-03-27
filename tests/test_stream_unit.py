@@ -1,8 +1,5 @@
-"""Unit tests for VideoStream — scrcpy client is mocked."""
+"""Unit tests for VideoStream — capture thread not started, buffer manipulated directly."""
 import collections
-import threading
-import time
-from unittest.mock import MagicMock, patch, call
 import numpy as np
 import pytest
 
@@ -19,8 +16,7 @@ class TestVideoStreamGetFrame:
         frame2 = _make_frame()
         stream._buffer = collections.deque([frame1, frame2], maxlen=60)
         stream._dead = False
-        result = stream.get_frame()
-        assert result is frame2
+        assert stream.get_frame() is frame2
 
     def test_raises_if_dead(self):
         from bot.stream import VideoStream
@@ -68,38 +64,24 @@ class TestVideoStreamGetClip:
         assert stream.get_clip(5) == []
 
 
-class TestVideoStreamOnFrame:
-    def test_frame_appended_to_buffer(self):
-        from bot.stream import VideoStream
-        stream = VideoStream.__new__(VideoStream)
-        stream._buffer = collections.deque(maxlen=60)
-        frame = _make_frame()
-        stream._on_frame(frame)
-        assert len(stream._buffer) == 1
-        assert stream._buffer[-1] is frame
-
-    def test_none_frame_ignored(self):
-        from bot.stream import VideoStream
-        stream = VideoStream.__new__(VideoStream)
-        stream._buffer = collections.deque(maxlen=60)
-        stream._on_frame(None)
-        assert len(stream._buffer) == 0
-
+class TestVideoStreamBuffer:
     def test_buffer_respects_maxlen(self):
         from bot.stream import VideoStream
         stream = VideoStream.__new__(VideoStream)
         stream._buffer = collections.deque(maxlen=3)
         frames = [_make_frame() for _ in range(5)]
         for f in frames:
-            stream._on_frame(f)
+            stream._buffer.append(f)
         assert len(stream._buffer) == 3
         assert list(stream._buffer) == frames[2:]
 
-
-class TestVideoStreamOnDisconnect:
-    def test_sets_dead_flag(self):
+    def test_dead_flag_default_false(self):
         from bot.stream import VideoStream
-        stream = VideoStream.__new__(VideoStream)
-        stream._dead = False
-        stream._on_disconnect()
-        assert stream._dead is True
+        stream = VideoStream(fps=60, buffer_size=60)
+        assert stream._dead is False
+
+    def test_constructor_sets_fps_and_buffer_size(self):
+        from bot.stream import VideoStream
+        stream = VideoStream(fps=30, buffer_size=90)
+        assert stream._fps == 30
+        assert stream._buffer.maxlen == 90
