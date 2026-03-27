@@ -196,7 +196,6 @@ def main():
                              CIRCUIT_BREAKER_MAX_FAILURES, CIRCUIT_BREAKER_WINDOW)
                 notify(f"Bot stopped: circuit breaker tripped ({CIRCUIT_BREAKER_MAX_FAILURES} "
                        f"failures in {CIRCUIT_BREAKER_WINDOW}s)")
-                metrics.log_final()
                 return
 
             # Log metrics periodically
@@ -293,7 +292,6 @@ def farm_to_max():
             if circuit_breaker.is_tripped():
                 logger.error("Circuit breaker tripped")
                 notify("Farm mode stopped: circuit breaker tripped")
-                metrics.log_final()
                 return
 
             metrics.maybe_log_hourly()
