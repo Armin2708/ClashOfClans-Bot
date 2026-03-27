@@ -53,9 +53,11 @@ class Metrics:
     def maybe_log_hourly(self):
         """Log metrics summary if an hour has passed since last log."""
         now = time.time()
-        if now - self._last_log_time >= METRICS_LOG_INTERVAL:
+        with self._lock:
+            if now - self._last_log_time < METRICS_LOG_INTERVAL:
+                return
             self._last_log_time = now
-            logger.info(self.get_summary())
+        logger.info(self.get_summary())
 
     def log_final(self):
         """Log metrics on bot shutdown."""

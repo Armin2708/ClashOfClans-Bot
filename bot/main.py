@@ -22,7 +22,7 @@ from bot.vision import (
 from bot.resources import get_resources
 from bot.battle import do_attack, return_home, wait_for_battle_end
 from bot.config import (
-    LOOP_DELAY, APP_LAUNCH_WAIT, EMPTY_TAP,
+    APP_LAUNCH_WAIT, EMPTY_TAP,
     CIRCUIT_BREAKER_MAX_FAILURES, CIRCUIT_BREAKER_WINDOW, MAX_UNKNOWN_STATE_STREAK,
     FARM_TARGET_GOLD, FARM_TARGET_ELIXIR,
 )
@@ -217,6 +217,9 @@ def main():
                     dismiss_popups()
                 elif recovery == "tap_empty":
                     tap(*EMPTY_TAP, delay=1)
+                elif recovery == "surrender":
+                    from bot.battle import surrender_and_return
+                    surrender_and_return()
 
             # Make sure we're on the village screen
             dismiss_popups()

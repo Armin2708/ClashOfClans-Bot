@@ -32,14 +32,9 @@ def shutdown_stream() -> None:
 
 
 def _adb_cmd(*args):
-    """Build an ADB command list, inserting -s <device> when configured."""
-    adb = Settings().get("adb_path", "adb")
-    device = Settings().get("device_address", "")
-    cmd = [adb]
-    if device:
-        cmd += ["-s", device]
-    cmd += list(args)
-    return cmd
+    """Build an ADB command list, inserting -s <device> when needed."""
+    from bot.stream import _adb_base
+    return _adb_base() + list(args)
 
 
 def check_adb_connection():
@@ -67,8 +62,8 @@ def check_adb_connection():
         result = subprocess.run(
             _adb_cmd("devices"), capture_output=True, text=True, timeout=10
         )
-        lines = [l.strip() for l in result.stdout.strip().split("\n")[1:] if l.strip()]
-        connected = [l for l in lines if "device" in l and "offline" not in l]
+        lines = result.stdout.strip().split("\n")[1:]
+        connected = [l for l in lines if "\tdevice" in l]
         if not connected:
             logger.error("No ADB devices connected")
             return False
@@ -141,6 +136,8 @@ def _detect_resolution():
 
 def screenshot() -> np.ndarray:
     """Return the latest frame from the video stream as a BGR numpy array."""
+    if _stream is None:
+        raise RuntimeError("Stream not initialized — call init_stream() first")
     return _stream.get_frame()
 
 

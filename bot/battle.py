@@ -236,8 +236,7 @@ def return_home():
             if result is not None:
                 logger.info("Back on village screen")
                 return True
-            # State didn't verify but tap succeeded, continue checking
-            return True
+            logger.debug("return_home tapped but village not confirmed yet, retrying...")
         # Tap center to dismiss any overlay
         h, w = img.shape[:2]
         tap(w // 2, h // 2, delay=1)

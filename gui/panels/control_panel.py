@@ -1,5 +1,7 @@
 """Dashboard panel — bot controls, status, resources, and activity feed."""
 
+import re
+
 from PySide6.QtCore import Signal, Qt
 from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QPushButton,
@@ -183,8 +185,6 @@ class DashboardPanel(QWidget):
         self._elixir_card["value"].setText(f"{elixir:,}")
 
     def update_metrics(self, text):
-        # Parse attack count from metrics string
-        import re
         m = re.search(r"attacks=(\d+)", text)
         if m:
             self._attack_count = int(m.group(1))

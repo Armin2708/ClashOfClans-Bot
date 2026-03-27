@@ -149,6 +149,9 @@ def auto_capture_template(img, button_name):
     with _templates_lock:
         if button_name in _auto_captured:
             return False
+        # Mark captured now (inside lock) to prevent a second thread from
+        # racing through the same check before the I/O below completes.
+        _auto_captured.add(button_name)
 
     region = _AUTO_CAPTURE_REGIONS.get(button_name)
     if not region:
@@ -186,8 +189,6 @@ def auto_capture_template(img, button_name):
 
     # Reload into memory
     _reload_template(button_name)
-    with _templates_lock:
-        _auto_captured.add(button_name)
     return True
 
 
@@ -208,21 +209,22 @@ def _get_template_gray(name):
 
 def get_townhall_templates():
     global _TOWNHALL_TEMPLATES
-    if _TOWNHALL_TEMPLATES is None:
-        from bot.settings import BASE_WIDTH, BASE_HEIGHT
-        rx = SCREEN_WIDTH / BASE_WIDTH
-        ry = SCREEN_HEIGHT / BASE_HEIGHT
-        need_scale = (rx != 1.0 or ry != 1.0)
-        _TOWNHALL_TEMPLATES = []
-        for i in range(7, 17):
-            t = load_template(f"templates/townhall/th_{i}.png")
-            if t is not None:
-                if need_scale:
-                    h, w = t.shape[:2]
-                    t = cv2.resize(t, (max(1, int(w * rx)), max(1, int(h * ry))),
-                                   interpolation=cv2.INTER_AREA)
-                _TOWNHALL_TEMPLATES.append(t)
-    return _TOWNHALL_TEMPLATES
+    with _templates_lock:
+        if _TOWNHALL_TEMPLATES is None:
+            from bot.settings import BASE_WIDTH, BASE_HEIGHT
+            rx = SCREEN_WIDTH / BASE_WIDTH
+            ry = SCREEN_HEIGHT / BASE_HEIGHT
+            need_scale = (rx != 1.0 or ry != 1.0)
+            _TOWNHALL_TEMPLATES = []
+            for i in range(7, 17):
+                t = load_template(f"templates/townhall/th_{i}.png")
+                if t is not None:
+                    if need_scale:
+                        h, w = t.shape[:2]
+                        t = cv2.resize(t, (max(1, int(w * rx)), max(1, int(h * ry))),
+                                       interpolation=cv2.INTER_AREA)
+                    _TOWNHALL_TEMPLATES.append(t)
+        return _TOWNHALL_TEMPLATES
 
 
 def validate_critical_templates():

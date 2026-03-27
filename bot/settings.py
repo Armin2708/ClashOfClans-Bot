@@ -194,8 +194,14 @@ class Settings:
         """Write settings to disk (thread-safe)."""
         with self._file_lock:
             os.makedirs(_SETTINGS_DIR, exist_ok=True)
-            with open(_SETTINGS_FILE, "w") as f:
-                json.dump(self._data, f, indent=2)
+            try:
+                with open(_SETTINGS_FILE, "w") as f:
+                    json.dump(self._data, f, indent=2)
+            except TypeError as e:
+                import logging
+                logging.getLogger("coc.settings").error(
+                    "Settings save failed (non-serializable value): %s", e
+                )
 
     def reset(self):
         """Reset all settings to defaults."""

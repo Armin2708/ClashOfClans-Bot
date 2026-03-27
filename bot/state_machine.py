@@ -125,6 +125,8 @@ class StateTracker:
             return "tap_empty"
         if state == GameState.SEARCHING:
             return "restart_app"
+        if state == GameState.VILLAGE:
+            return "tap_empty"
 
         return None
 

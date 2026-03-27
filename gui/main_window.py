@@ -148,5 +148,17 @@ class MainWindow(QMainWindow):
     def closeEvent(self, event):
         if self.worker and self.worker.isRunning():
             self.worker.stop()
+            # Disconnect signals before waiting so Qt doesn't deliver callbacks
+            # into a partially-destroyed window if the thread outlives the timeout.
+            try:
+                self.worker.status_changed.disconnect()
+                self.worker.resources_updated.disconnect()
+                self.worker.metrics_updated.disconnect()
+                self.worker.error_occurred.disconnect()
+                self.worker.bot_stopped.disconnect()
+            except RuntimeError:
+                pass
             self.worker.wait(5000)
+        # Remove log handler to prevent use-after-free on the log panel
+        logging.getLogger("coc").removeHandler(self._log_handler)
         event.accept()
