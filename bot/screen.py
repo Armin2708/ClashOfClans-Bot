@@ -18,14 +18,9 @@ def init_stream() -> None:
     """Create and start the video stream. Call once before the bot loop."""
     global _stream
     settings = Settings()
-    region = settings.get("bluestacks_region")  # [x, y, w, h] or None = auto-detect
-    fps = settings.get("stream_fps", 60)
+    fps = settings.get("stream_fps", 30)
     buf = settings.get("stream_buffer_size", 60)
-    _stream = VideoStream(
-        region=tuple(region) if region else None,
-        fps=fps,
-        buffer_size=buf,
-    )
+    _stream = VideoStream(fps=fps, buffer_size=buf)
     _stream.start()
 
 

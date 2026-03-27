@@ -1,3 +1,43 @@
+# ADB Screenrecord Stream Implementation Plan
+
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+
+**Goal:** Replace the mss screen-capture VideoStream with an ADB screenrecord stream so the bot can capture frames in the background without requiring BlueStacks to be visible.
+
+**Architecture:** Two chained subprocesses run in a daemon thread — `adb exec-out screenrecord --output-format=h264 -` pipes a raw H.264 stream into `ffmpeg`, which decodes it to BGR24 raw frames that are pushed into a ring buffer. The public `VideoStream` interface (`start/stop/get_frame/get_clip`) is unchanged so no callers need to be updated. Auto-reconnects on stream death.
+
+**Tech Stack:** Python 3.13, subprocess (stdlib), numpy, ffmpeg (system binary via Homebrew)
+
+---
+
+## File Map
+
+| File | Change |
+|------|--------|
+| `bot/stream.py` | Full rewrite — replace mss with adb+ffmpeg pipeline |
+| `bot/screen.py` | Remove resize hack in `screenshot()`; simplify `init_stream()` |
+| `bot/settings.py` | Remove `bluestacks_region`; rename `stream_fps` → keep (unused but harmless) |
+| `requirements.txt` | Remove `mss>=9.0` and `pyobjc-framework-Quartz>=9.0` |
+| `tests/test_stream_unit.py` | Remove mss-specific tests; unit tests still pass via `__new__` bypass |
+
+---
+
+### Task 1: Rewrite bot/stream.py
+
+**Files:**
+- Modify: `bot/stream.py`
+- Test: `tests/test_stream_unit.py`
+
+- [ ] **Step 1: Run existing unit tests to establish baseline**
+
+```bash
+.venv/bin/python -m pytest tests/test_stream_unit.py -v
+```
+Expected: all 9 tests PASS (they use `__new__` bypass, independent of implementation)
+
+- [ ] **Step 2: Rewrite bot/stream.py**
+
+```python
 """Continuous video stream via adb screenrecord piped through ffmpeg.
 
 Background-capable: uses ADB TCP, does not require BlueStacks to be visible.
@@ -61,7 +101,7 @@ class VideoStream:
     Usage::
 
         stream = VideoStream(buffer_size=60)
-        stream.start()               # queries ADB resolution, starts thread
+        stream.start()          # blocks until resolution is known
         frame = stream.get_frame()   # latest BGR numpy array
         stream.stop()
     """
@@ -203,3 +243,162 @@ class VideoStream:
 
         self._dead = True
         logger.info("ADB screenrecord stream stopped")
+```
+
+- [ ] **Step 3: Run unit tests — all must still pass**
+
+```bash
+.venv/bin/python -m pytest tests/test_stream_unit.py -v
+```
+Expected: 9 tests PASS. The tests use `VideoStream.__new__` and manipulate `_buffer`/`_dead` directly — they are independent of the capture backend.
+
+- [ ] **Step 4: Commit**
+
+```bash
+git add bot/stream.py
+git commit -m "feat: replace mss VideoStream with adb screenrecord + ffmpeg pipeline"
+```
+
+---
+
+### Task 2: Update bot/screen.py
+
+**Files:**
+- Modify: `bot/screen.py`
+
+- [ ] **Step 1: Remove the resize hack from screenshot() and simplify init_stream()**
+
+In `bot/screen.py`, replace `init_stream()` and `screenshot()`:
+
+```python
+def init_stream() -> None:
+    """Create and start the video stream. Call once before the bot loop."""
+    global _stream
+    settings = Settings()
+    fps = settings.get("stream_fps", 30)
+    buf = settings.get("stream_buffer_size", 60)
+    _stream = VideoStream(fps=fps, buffer_size=buf)
+    _stream.start()
+
+
+def screenshot() -> np.ndarray:
+    """Return the latest frame from the video stream as a BGR numpy array."""
+    return _stream.get_frame()
+```
+
+Also remove the unused PIL/io imports if present (check top of file — `from PIL import Image` and `import io` were from the old ADB screencap implementation).
+
+- [ ] **Step 2: Verify no leftover mss or Quartz imports**
+
+```bash
+grep -n "mss\|Quartz\|PIL\|bluestacks_region\|BASE_WIDTH\|BASE_HEIGHT" bot/screen.py
+```
+Expected: no matches (or only the `BASE_WIDTH/BASE_HEIGHT` import in `check_adb_connection` which is fine).
+
+- [ ] **Step 3: Commit**
+
+```bash
+git add bot/screen.py
+git commit -m "fix: remove mss resize hack from screenshot(), simplify init_stream()"
+```
+
+---
+
+### Task 3: Clean up settings and requirements
+
+**Files:**
+- Modify: `bot/settings.py`
+- Modify: `requirements.txt`
+
+- [ ] **Step 1: Remove bluestacks_region from settings.py DEFAULTS**
+
+In `bot/settings.py`, in the `DEFAULTS` dict, replace:
+
+```python
+    # Video stream
+    "stream_fps": 60,
+    "stream_buffer_size": 60,
+    "bluestacks_region": None,  # [x, y, w, h] — None = auto-detect via Quartz
+```
+
+with:
+
+```python
+    # Video stream
+    "stream_fps": 30,
+    "stream_buffer_size": 60,
+```
+
+- [ ] **Step 2: Remove mss and Quartz from requirements.txt**
+
+Replace:
+```
+mss>=9.0
+pyobjc-framework-Quartz>=9.0
+```
+with nothing (delete both lines).
+
+- [ ] **Step 3: Uninstall the removed packages from venv**
+
+```bash
+.venv/bin/pip uninstall mss pyobjc-framework-Quartz -y
+```
+
+- [ ] **Step 4: Commit**
+
+```bash
+git add bot/settings.py requirements.txt
+git commit -m "chore: remove mss/Quartz dependencies, drop bluestacks_region setting"
+```
+
+---
+
+### Task 4: Integration smoke test
+
+**Files:**
+- Read: `scripts/test_stream.py`
+
+- [ ] **Step 1: Verify ffmpeg is installed**
+
+```bash
+ffmpeg -version 2>&1 | head -1
+```
+Expected output contains `ffmpeg version`. If missing: `brew install ffmpeg`
+
+- [ ] **Step 2: Run the integration test with BlueStacks open**
+
+```bash
+.venv/bin/python scripts/test_stream.py
+```
+Expected output:
+```
+Starting stream (auto-detect BlueStacks window) @ 30fps ...
+Waiting for first frame ...
+First frame: 2560x1440x3 dtype=uint8  OK
+Measuring FPS for 2 seconds ...
+Polled N frames in 2.00s -> N.N polls/sec  OK
+get_clip(8) returned 8 frames  OK
+
+All checks passed. Stream is working correctly.
+```
+
+- [ ] **Step 3: Run full unit test suite**
+
+```bash
+.venv/bin/python -m pytest tests/ -v
+```
+Expected: all tests PASS
+
+- [ ] **Step 4: Run the app**
+
+```bash
+./start.sh
+```
+Expected: GUI opens, bot starts, logs show frames being captured and state detection working.
+
+- [ ] **Step 5: Final commit**
+
+```bash
+git add scripts/test_stream.py
+git commit -m "test: update stream integration test for adb screenrecord backend"
+```
