@@ -335,7 +335,6 @@ def farm_to_max():
             if gold >= FARM_TARGET_GOLD and elixir >= FARM_TARGET_ELIXIR:
                 logger.info("FARM TARGET REACHED! Gold: %d, Elixir: %d", gold, elixir)
                 notify(f"Farm target reached! Gold: {gold:,}, Elixir: {elixir:,}")
-                metrics.log_final()
                 return
 
             # Keep attacking
