@@ -10,9 +10,37 @@ from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QGroupBox, QFormLayout, QHBoxLayout,
     QLineEdit, QPushButton, QLabel, QSpinBox, QCheckBox, QScrollArea,
 )
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QThread, Signal
 
 from bot.settings import Settings, BASE_WIDTH, BASE_HEIGHT
+
+
+class _WebhookTestWorker(QThread):
+    """Background thread for testing the Discord webhook — keeps GUI responsive."""
+    result_ready = Signal(bool, str)  # (success, message)
+
+    def __init__(self, url, parent=None):
+        super().__init__(parent)
+        self._url = url
+
+    def run(self):
+        try:
+            payload = json.dumps({"content": "CoC Bot: test message"}).encode()
+            req = urllib.request.Request(
+                self._url,
+                data=payload,
+                headers={"Content-Type": "application/json", "User-Agent": "COC-Bot/1.0"},
+                method="POST",
+            )
+            with urllib.request.urlopen(req, timeout=10) as resp:
+                if resp.status < 300:
+                    self.result_ready.emit(True, "Working!")
+                else:
+                    self.result_ready.emit(False, f"HTTP {resp.status}")
+        except urllib.error.HTTPError as e:
+            self.result_ready.emit(False, f"HTTP {e.code}")
+        except Exception as e:
+            self.result_ready.emit(False, f"Error: {e}")
 
 
 class SettingsPanel(QWidget):
@@ -21,6 +49,7 @@ class SettingsPanel(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         self._settings = Settings()
+        self._webhook_worker = None
         self._build_ui()
         self._load_settings()
 
@@ -230,24 +259,17 @@ class SettingsPanel(QWidget):
             self._discord_status.setStyleSheet("color: #ef4444; font-weight: 500;")
             return
 
-        try:
-            payload = json.dumps({"content": "CoC Bot: test message"}).encode()
-            req = urllib.request.Request(
-                url,
-                data=payload,
-                headers={"Content-Type": "application/json", "User-Agent": "COC-Bot/1.0"},
-                method="POST",
-            )
-            with urllib.request.urlopen(req, timeout=10) as resp:
-                if resp.status < 300:
-                    self._discord_status.setText("Working!")
-                    self._discord_status.setStyleSheet("color: #22c55e; font-weight: 500;")
-                else:
-                    self._discord_status.setText(f"HTTP {resp.status}")
-                    self._discord_status.setStyleSheet("color: #ef4444; font-weight: 500;")
-        except urllib.error.HTTPError as e:
-            self._discord_status.setText(f"HTTP {e.code}")
-            self._discord_status.setStyleSheet("color: #ef4444; font-weight: 500;")
-        except Exception as e:
-            self._discord_status.setText(f"Error: {e}")
-            self._discord_status.setStyleSheet("color: #ef4444; font-weight: 500;")
+        self._test_btn.setEnabled(False)
+        self._discord_status.setText("Testing...")
+        self._discord_status.setStyleSheet("color: rgba(255,255,255,0.5); font-weight: 500;")
+
+        self._webhook_worker = _WebhookTestWorker(url, parent=self)
+        self._webhook_worker.result_ready.connect(self._on_webhook_result)
+        self._webhook_worker.start()
+
+    def _on_webhook_result(self, success, message):
+        self._test_btn.setEnabled(True)
+        color = "#22c55e" if success else "#ef4444"
+        self._discord_status.setText(message)
+        self._discord_status.setStyleSheet(f"color: {color}; font-weight: 500;")
+        self._webhook_worker = None
