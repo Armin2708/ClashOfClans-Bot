@@ -12,8 +12,12 @@ from PySide6.QtCore import QThread, Signal, QObject
 
 logger = logging.getLogger("coc.updater")
 
-# Current version — bump this each release to match the GitHub Release tag
-APP_VERSION = os.environ.get("APP_VERSION", "1.0.0")
+# Current version — baked into bot/_version.py at PyInstaller build time.
+# Falls back to APP_VERSION env var (dev/CI), then "1.0.0".
+try:
+    from bot._version import APP_VERSION
+except ImportError:
+    APP_VERSION = os.environ.get("APP_VERSION", "1.0.0")
 
 # GitHub repo — releases are checked via the public API (no token needed)
 GITHUB_REPO = "Armin2708/ClashOfClans-Bot"
@@ -59,25 +63,25 @@ class UpdateChecker(QObject):
         if not data:
             return
 
-        tag = data.get("tag_name", "")  # e.g. "v1.1.0"
+        tag = data.get("tag_name", "")
         release_notes = data.get("body", "")
-        html_url = data.get("html_url", "")  # link to the release page
+        html_url = data.get("html_url", "")
 
         if not tag:
             return
 
-        # Strip leading 'v' from tag for version comparison
         remote_version = tag.lstrip("v")
 
         try:
             if Version(remote_version) <= Version(APP_VERSION):
                 logger.debug("App is up to date (v%s)", APP_VERSION)
+                self._cleanup()
                 return
         except Exception:
+            self._cleanup()
             return
 
-        # Find the .dmg asset download URL
-        download_url = html_url  # fallback: release page
+        download_url = html_url
         for asset in data.get("assets", []):
             if asset.get("name", "").endswith(".dmg"):
                 download_url = asset["browser_download_url"]
@@ -85,7 +89,13 @@ class UpdateChecker(QObject):
 
         logger.info("Update available: v%s -> v%s", APP_VERSION, remote_version)
 
-        msg = QMessageBox(self._parent)
+        try:
+            msg = QMessageBox(self._parent)
+        except RuntimeError:
+            logger.debug("Update check: parent window destroyed, skipping dialog")
+            self._cleanup()
+            return
+
         msg.setWindowTitle("Update Available")
         msg.setText(f"A new version is available: v{remote_version}")
         msg.setInformativeText(
@@ -99,6 +109,11 @@ class UpdateChecker(QObject):
         if msg.exec() == QMessageBox.Yes:
             webbrowser.open(download_url)
 
-        self._worker.quit()
-        self._worker.wait()
-        self._worker = None
+        self._cleanup()
+
+    def _cleanup(self):
+        """Stop and release the background worker thread."""
+        if self._worker:
+            self._worker.quit()
+            self._worker.wait()
+            self._worker = None
