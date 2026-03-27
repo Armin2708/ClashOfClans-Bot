@@ -11,7 +11,6 @@ logger = logging.getLogger("coc.worker")
 
 
 class BotMode(Enum):
-    NORMAL = auto()
     FARM = auto()
 
 
@@ -24,7 +23,7 @@ class BotWorker(QThread):
     error_occurred = Signal(str)
     bot_stopped = Signal(str)
 
-    def __init__(self, mode=BotMode.NORMAL):
+    def __init__(self, mode=BotMode.FARM):
         super().__init__()
         self.mode = mode
         self._stop_event = threading.Event()
@@ -63,6 +62,7 @@ class BotWorker(QThread):
             screenshot, open_app, is_app_running, tap, restart_app,
             wait_for_state, check_adb_connection,
         )
+        from bot.screen import init_stream, shutdown_stream
         from bot.vision import (
             find_popup, detect_screen_state, validate_critical_templates,
         )
@@ -164,6 +164,8 @@ class BotWorker(QThread):
         circuit_breaker = CircuitBreaker(CIRCUIT_BREAKER_MAX_FAILURES, CIRCUIT_BREAKER_WINDOW)
         state_tracker = StateTracker()
 
+        init_stream()
+
         try:
             self.status_changed.emit("Starting...")
 
@@ -182,12 +184,8 @@ class BotWorker(QThread):
             if wait_for_state(GameState.VILLAGE, timeout=10) is None:
                 self._interruptible_sleep(3)
 
-            if self.mode == BotMode.FARM:
-                self.status_changed.emit("Farm mode started")
-                notify(f"Farm mode started — target: {FARM_TARGET_GOLD:,} gold, {FARM_TARGET_ELIXIR:,} elixir")
-            else:
-                self.status_changed.emit("Bot started")
-                notify("Bot started")
+            self.status_changed.emit("Farm mode started")
+            notify(f"Farm mode started — target: {FARM_TARGET_GOLD:,} gold, {FARM_TARGET_ELIXIR:,} elixir")
 
             unknown_streak = 0
             loop_count = 0
@@ -199,7 +197,7 @@ class BotWorker(QThread):
                     break
 
                 loop_count += 1
-                mode_label = "FARM" if self.mode == BotMode.FARM else "LOOP"
+                mode_label = "FARM"
                 logger.info("=" * 30 + " %s #%d " + "=" * 30, mode_label, loop_count)
 
                 # Circuit breaker
@@ -257,33 +255,24 @@ class BotWorker(QThread):
                 self.resources_updated.emit(gold, elixir)
                 logger.info("Resources — Gold: %d, Elixir: %d", gold, elixir)
 
-                if self.mode == BotMode.FARM:
-                    # Farm mode: check target
-                    if gold >= FARM_TARGET_GOLD and elixir >= FARM_TARGET_ELIXIR:
-                        msg = f"Farm target reached! Gold: {gold:,}, Elixir: {elixir:,}"
-                        logger.info(msg)
-                        notify(msg)
-                        self.status_changed.emit(msg)
-                        metrics.log_final()
-                        self.bot_stopped.emit(msg)
-                        return
+                # Farm mode: check target
+                if gold >= FARM_TARGET_GOLD and elixir >= FARM_TARGET_ELIXIR:
+                    msg = f"Farm target reached! Gold: {gold:,}, Elixir: {elixir:,}"
+                    logger.info(msg)
+                    notify(msg)
+                    self.status_changed.emit(msg)
+                    metrics.log_final()
+                    self.bot_stopped.emit(msg)
+                    return
 
-                    # Keep attacking
-                    self.status_changed.emit(
-                        f"Farming... (need Gold: {max(0, FARM_TARGET_GOLD - gold):,} more, "
-                        f"Elixir: {max(0, FARM_TARGET_ELIXIR - elixir):,} more)"
-                    )
-                    attacked = do_attack()
-                    if attacked:
-                        metrics.record_attack()
-
-                else:
-                    # Normal mode: just attack
-                    self.status_changed.emit("Attacking...")
-                    logger.info("Going to attack...")
-                    attacked = do_attack()
-                    if attacked:
-                        metrics.record_attack()
+                # Keep attacking
+                self.status_changed.emit(
+                    f"Farming... (need Gold: {max(0, FARM_TARGET_GOLD - gold):,} more, "
+                    f"Elixir: {max(0, FARM_TARGET_ELIXIR - elixir):,} more)"
+                )
+                attacked = do_attack()
+                if attacked:
+                    metrics.record_attack()
 
             # Clean exit
             reason = "Stopped by user"
@@ -297,3 +286,5 @@ class BotWorker(QThread):
             self.error_occurred.emit(str(e))
             metrics.log_final()
             self.bot_stopped.emit(f"Crashed: {e}")
+        finally:
+            shutdown_stream()
