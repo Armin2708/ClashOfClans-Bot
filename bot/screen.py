@@ -7,7 +7,7 @@ import logging
 from PIL import Image
 import io
 
-from bot.config import ADB_PATH, GAME_PACKAGE, SCREEN_WIDTH, SCREEN_HEIGHT
+from bot.config import GAME_PACKAGE, SCREEN_WIDTH, SCREEN_HEIGHT
 from bot.settings import Settings
 
 logger = logging.getLogger("coc.screen")
@@ -15,8 +15,9 @@ logger = logging.getLogger("coc.screen")
 
 def _adb_cmd(*args):
     """Build an ADB command list, inserting -s <device> when configured."""
-    cmd = [ADB_PATH]
+    adb = Settings().get("adb_path", "adb")
     device = Settings().get("device_address", "")
+    cmd = [adb]
     if device:
         cmd += ["-s", device]
     cmd += list(args)
@@ -33,7 +34,7 @@ def check_adb_connection():
     if device:
         try:
             result = subprocess.run(
-                [ADB_PATH, "connect", device],
+                [Settings().get("adb_path", "adb"), "connect", device],
                 capture_output=True, text=True, timeout=10
             )
             output = result.stdout.strip().lower()
