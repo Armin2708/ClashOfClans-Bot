@@ -6,6 +6,11 @@ import os
 VERSION = os.environ.get('VERSION', '1.0.0')
 block_cipher = None
 
+# Bake version into bot/_version.py so it's readable at runtime inside the frozen app.
+# os.environ is not preserved by PyInstaller, so env-based version detection fails.
+with open('bot/_version.py', 'w') as _vf:
+    _vf.write(f'APP_VERSION = "{VERSION}"\n')
+
 # Collect all template images
 template_datas = []
 for root, dirs, files in os.walk('templates'):
@@ -40,6 +45,7 @@ a = Analysis(
         'packaging',
         'packaging.version',
         'bot',
+        'bot._version',
         'bot.battle',
         'bot.config',
         'bot.main',
