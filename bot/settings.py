@@ -141,6 +141,10 @@ DEFAULTS = {
 
     # New keys
     "device_address": "",
+
+    # Video stream
+    "stream_fps": 60,
+    "stream_buffer_size": 60,
 }
 
 
