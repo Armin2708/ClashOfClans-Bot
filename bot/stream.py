@@ -21,18 +21,56 @@ import numpy as np
 logger = logging.getLogger("coc.stream")
 
 _RECONNECT_DELAY = 2.0  # seconds between reconnect attempts
+_cached_device: str = ""   # cached auto-detected device serial
 
 
 def _adb_base():
-    """Return base ADB command list, inserting -s <device> when configured."""
+    """Return base ADB command list with -s <device> when needed.
+
+    If device_address is not configured in settings, auto-detects by
+    preferring TCP devices (e.g. localhost:5555 = BlueStacks). Result
+    is cached so device listing only runs once per process.
+    """
+    global _cached_device
     from bot.settings import Settings
     s = Settings()
     adb = s.get("adb_path", "adb")
     device = s.get("device_address", "")
+    if not device:
+        if not _cached_device:
+            _cached_device = _auto_detect_device(adb)
+        device = _cached_device
     cmd = [adb]
     if device:
         cmd += ["-s", device]
     return cmd
+
+
+def _auto_detect_device(adb: str) -> str:
+    """Return the best ADB device serial, preferring TCP (BlueStacks).
+
+    With a single device, returns its serial. With multiple devices,
+    prefers any TCP address (host:port). Returns "" on failure.
+    """
+    try:
+        result = subprocess.run(
+            [adb, "devices"], capture_output=True, text=True, timeout=5
+        )
+        lines = [
+            l.strip() for l in result.stdout.strip().splitlines()[1:]
+            if l.strip() and "\tdevice" in l
+        ]
+        if len(lines) == 1:
+            return lines[0].split()[0]
+        for line in lines:
+            serial = line.split()[0]
+            if ":" in serial:   # TCP device like localhost:5555
+                return serial
+        if lines:
+            return lines[0].split()[0]
+    except Exception as e:
+        logger.warning("Device auto-detection failed: %s", e)
+    return ""
 
 
 def _query_resolution():
@@ -148,7 +186,7 @@ class VideoStream:
                 adb_cmd = _adb_base() + [
                     "exec-out", "screenrecord",
                     "--output-format=h264",
-                    "--time-limit=0",
+                    "--time-limit=180",
                     "-",
                 ]
                 ff_cmd = [
