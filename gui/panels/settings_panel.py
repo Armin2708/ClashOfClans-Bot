@@ -32,11 +32,8 @@ class _WebhookTestWorker(QThread):
                 headers={"Content-Type": "application/json", "User-Agent": "COC-Bot/1.0"},
                 method="POST",
             )
-            with urllib.request.urlopen(req, timeout=10) as resp:
-                if resp.status < 300:
-                    self.result_ready.emit(True, "Working!")
-                else:
-                    self.result_ready.emit(False, f"HTTP {resp.status}")
+            urllib.request.urlopen(req, timeout=10).close()
+            self.result_ready.emit(True, "Working!")
         except urllib.error.HTTPError as e:
             self.result_ready.emit(False, f"HTTP {e.code}")
         except Exception as e:
@@ -253,6 +250,8 @@ class SettingsPanel(QWidget):
             self._resolution_label.setStyleSheet("color: #ef4444; font-weight: 500;")
 
     def _on_test_webhook(self):
+        if self._webhook_worker is not None and self._webhook_worker.isRunning():
+            return
         url = self._webhook_url.text().strip()
         if not url:
             self._discord_status.setText("No URL")
