@@ -16,6 +16,7 @@ import numpy as np
 import os
 import re
 import logging
+import threading
 import pytesseract
 from bot.screen import screenshot
 from bot.utils import find_template, load_template, load_template_gray, save_debug, writable_path
@@ -45,6 +46,8 @@ _TOWNHALL_TEMPLATES = None
 
 
 def _load_templates():
+    """Load all button templates into module-level caches.
+    Must be called with _templates_lock held by the caller."""
     global _TEMPLATES, _TEMPLATES_GRAY
 
     names = [
@@ -97,10 +100,6 @@ def _load_templates():
 def _reload_template(name):
     """Reload a single template from disk into the in-memory caches."""
     global _TEMPLATES, _TEMPLATES_GRAY
-    if _TEMPLATES is None:
-        _load_templates()
-        return
-
     paths = {
         "next_base": "templates/buttons/next_base.png",
     }
@@ -117,11 +116,14 @@ def _reload_template(name):
         h, w = bgr.shape[:2]
         new_w, new_h = max(1, int(w * rx)), max(1, int(h * ry))
         bgr = cv2.resize(bgr, (new_w, new_h), interpolation=cv2.INTER_AREA)
-    _TEMPLATES[name] = bgr
-    if bgr is not None:
-        _TEMPLATES_GRAY[name] = cv2.cvtColor(bgr, cv2.COLOR_BGR2GRAY)
-    else:
-        _TEMPLATES_GRAY[name] = None
+
+    with _templates_lock:
+        if _TEMPLATES is None:
+            _load_templates()
+        _TEMPLATES[name] = bgr
+        _TEMPLATES_GRAY[name] = (
+            cv2.cvtColor(bgr, cv2.COLOR_BGR2GRAY) if bgr is not None else None
+        )
 
 
 # Crop coordinates for auto-capture (at base 2560x1440 resolution).
@@ -132,6 +134,7 @@ _AUTO_CAPTURE_REGIONS = {
 }
 
 _auto_captured = set()  # track which templates have been captured this session
+_templates_lock = threading.Lock()
 
 
 def auto_capture_template(img, button_name):
@@ -187,18 +190,18 @@ def auto_capture_template(img, button_name):
 
 
 def get_template(name):
-    global _TEMPLATES
-    if _TEMPLATES is None:
-        _load_templates()
-    return _TEMPLATES.get(name)
+    with _templates_lock:
+        if _TEMPLATES is None:
+            _load_templates()
+        return _TEMPLATES.get(name)
 
 
 def _get_template_gray(name):
     """Get a pre-converted grayscale template for fast matching."""
-    global _TEMPLATES_GRAY
-    if _TEMPLATES_GRAY is None:
-        _load_templates()
-    return _TEMPLATES_GRAY.get(name)
+    with _templates_lock:
+        if _TEMPLATES_GRAY is None:
+            _load_templates()
+        return _TEMPLATES_GRAY.get(name)
 
 
 def get_townhall_templates():
