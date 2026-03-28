@@ -3,7 +3,7 @@
 import logging
 
 from PySide6.QtWidgets import (
-    QMainWindow, QWidget, QVBoxLayout, QTabWidget, QStackedWidget,
+    QMainWindow, QWidget, QVBoxLayout, QTabWidget, QStackedWidget, QApplication,
 )
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QPainter, QLinearGradient, QColor
@@ -41,7 +41,7 @@ class MainWindow(QMainWindow):
         self._settings = Settings()
 
         self.setWindowTitle("Clash of Clans Bot")
-        self.setMinimumSize(900, 650)
+        self.setMinimumSize(820, 540)
 
         # Gradient background
         central = _GradientBackground()
@@ -68,7 +68,6 @@ class MainWindow(QMainWindow):
 
         # Tabs
         self.tabs = QTabWidget()
-        self.tabs.setDocumentMode(True)
 
         self.dashboard = DashboardPanel()
         self.tabs.addTab(self.dashboard, "Dashboard")
@@ -104,6 +103,21 @@ class MainWindow(QMainWindow):
         # Update checker
         self._update_checker = UpdateChecker(self)
         self._update_checker.check()
+
+        self._fit_to_screen()
+
+    def _fit_to_screen(self):
+        """Resize and center the window so it never exceeds the available screen area."""
+        screen = QApplication.primaryScreen()
+        if not screen:
+            return
+        avail = screen.availableGeometry()
+        w = min(900, avail.width())
+        h = min(650, avail.height())
+        self.resize(w, h)
+        x = avail.x() + (avail.width() - w) // 2
+        y = avail.y() + (avail.height() - h) // 2
+        self.move(x, y)
 
     def _on_onboarding_done(self):
         self._settings.set("onboarding_completed", True)

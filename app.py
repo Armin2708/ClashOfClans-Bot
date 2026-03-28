@@ -5,6 +5,7 @@ import os
 import logging
 import shutil
 from PySide6.QtWidgets import QApplication
+from PySide6.QtCore import Qt
 from gui.main_window import MainWindow
 from gui.theme import apply_theme
 
@@ -57,6 +58,7 @@ def main():
     root.addHandler(fh)
 
     app = QApplication(sys.argv)
+    app.styleHints().setColorScheme(Qt.ColorScheme.Dark)
     apply_theme(app)
     window = MainWindow()
     window.show()

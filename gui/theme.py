@@ -81,6 +81,11 @@ QTabWidget::pane {{
     top: -1px;
 }}
 
+QTabWidget > QWidget {{
+    border-bottom-left-radius: {r};
+    border-bottom-right-radius: {r};
+}}
+
 QTabBar {{
     background: transparent;
     qproperty-drawBase: 0;
