@@ -145,6 +145,10 @@ DEFAULTS = {
     # Video stream
     "stream_fps": 30,
     "stream_buffer_size": 60,
+
+    # YOLO detection model
+    "yolo_model_path": "models/coc.pt",
+    "yolo_confidence_threshold": 0.45,
 }
 
 
