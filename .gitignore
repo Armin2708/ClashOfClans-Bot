@@ -46,3 +46,12 @@ tools/
 
 # Generated at build time by ClashOfClansBot.spec
 bot/_version.py
+
+# YOLO model weights (large binaries — download/train locally)
+models/*.pt
+
+# Training datasets (downloaded/generated — do not commit)
+datasets/
+
+# Ultralytics training run outputs
+runs/
