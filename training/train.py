@@ -31,7 +31,7 @@ def train(
 ) -> None:
     from ultralytics import YOLO
 
-    last_ckpt = Path("runs/detect/coc/weights/last.pt")
+    last_ckpt = Path("runs/coc/weights/last.pt")
     if resume and last_ckpt.exists():
         print(f"Resuming from {last_ckpt}")
         model = YOLO(str(last_ckpt))
@@ -46,14 +46,14 @@ def train(
         imgsz=imgsz,
         batch=batch,
         name="coc",
-        project="runs/detect",
+        project="runs",
         patience=20,
         save=True,
         plots=True,
         exist_ok=True,
     )
 
-    best = Path("runs/detect/coc/weights/best.pt")
+    best = Path("runs/coc/weights/best.pt")
     if best.exists():
         Path("models").mkdir(exist_ok=True)
         dest = Path("models/coc.pt")

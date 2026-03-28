@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """
 Merge the public building dataset (16 classes) with the manually labeled
-UI dataset (18 classes) into a unified dataset for the full model.
+full dataset (40 classes: buildings + UI) into a unified dataset.
 
 The public dataset uses class IDs 0-15.
-The labeled dataset uses class IDs 0-17 (Roboflow resets to 0).
-This script remaps labeled IDs -> 16-33 so they don't conflict.
+The labeled dataset uses class IDs 0-39 (Roboflow resets to 0).
+This script remaps labeled IDs -> 16-55 so they don't conflict.
 
 Usage:
     python training/merge_datasets.py \
@@ -27,11 +27,68 @@ PUBLIC_CLASSES = [
 
 # Must match the class order used in Roboflow when labeling.
 # Check datasets/labeled/data.yaml for the exact order Roboflow assigned.
+#
+# DEFENSES (not in public dataset):
+#   archer_tower, hidden_tesla, giga_tesla, monolith
+# RESOURCES:
+#   gold_mine, elixir_collector, dark_elixir_drill
+#   gold_storage, elixir_storage, dark_elixir_storage
+# ARMY:
+#   barracks, dark_barracks, army_camp, spell_factory,
+#   dark_spell_factory, laboratory, workshop, pet_house,
+#   blacksmith, hero_hall
+# STRUCTURES:
+#   town_hall, builder_hut
+# UI BUTTONS + HUD:
+#   btn_*, hud_*, loot_*, troop_slot
 LABELED_CLASSES = [
-    "btn_attack", "btn_find_match", "btn_start_battle", "btn_next_base",
-    "btn_return_home", "btn_end_battle", "btn_confirm", "btn_close",
-    "btn_okay", "btn_later", "hud_village", "hud_scouting", "hud_results",
-    "hud_army", "loot_gold", "loot_elixir", "loot_gem", "troop_slot",
+    # ── Defenses not covered by public dataset ──────────────────
+    "archer_tower",
+    "hidden_tesla",
+    "giga_tesla",
+    "monolith",
+    # ── Resource buildings ───────────────────────────────────────
+    "gold_mine",
+    "elixir_collector",
+    "dark_elixir_drill",
+    "gold_storage",
+    "elixir_storage",
+    "dark_elixir_storage",
+    # ── Army buildings ───────────────────────────────────────────
+    "barracks",
+    "dark_barracks",
+    "army_camp",
+    "spell_factory",
+    "dark_spell_factory",
+    "laboratory",
+    "workshop",
+    "pet_house",
+    "blacksmith",
+    "hero_hall",
+    # ── Other structures ─────────────────────────────────────────
+    "town_hall",
+    "builder_hut",
+    # ── UI buttons ───────────────────────────────────────────────
+    "btn_attack",
+    "btn_find_match",
+    "btn_start_battle",
+    "btn_next_base",
+    "btn_return_home",
+    "btn_end_battle",
+    "btn_confirm",
+    "btn_close",
+    "btn_okay",
+    "btn_later",
+    # ── HUD overlays ─────────────────────────────────────────────
+    "hud_village",
+    "hud_scouting",
+    "hud_results",
+    "hud_army",
+    # ── Loot / troop UI ──────────────────────────────────────────
+    "loot_gold",
+    "loot_elixir",
+    "loot_gem",
+    "troop_slot",
 ]
 
 ALL_CLASSES = PUBLIC_CLASSES + LABELED_CLASSES
