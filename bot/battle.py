@@ -12,7 +12,6 @@ from bot.screen import screenshot, tap, swipe, wait_for_state, tap_and_verify
 from bot.vision import (
     find_button, detect_screen_state, read_enemy_loot,
     get_deploy_corner, get_troop_slots, find_popup,
-    auto_capture_template
 )
 import bot.config as config
 from bot.state_machine import GameState
@@ -284,10 +283,6 @@ def do_attack():
     if img is None:
         logger.debug("Taking screenshot of first enemy base...")
         img = screenshot()
-
-    # Auto-capture the Next button template from the live scouting screen.
-    # This keeps the template current even when game UI or costs change.
-    auto_capture_template(img, "next_base")
 
     # Scout bases until we find one worth attacking
     consecutive_skip_failures = 0

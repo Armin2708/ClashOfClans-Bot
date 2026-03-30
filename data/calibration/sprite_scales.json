@@ -1,0 +1,1827 @@
+{
+  "bomb_trap_1": {
+    "scale": 0.58,
+    "ox": 0,
+    "oy": 5
+  },
+  "seeking_air_mine_1": {
+    "scale": 0.88,
+    "ox": 0,
+    "oy": 5
+  },
+  "wall_1": {
+    "scale": 0.91,
+    "ox": -2,
+    "oy": 12
+  },
+  "wall_2": {
+    "scale": 0.92,
+    "ox": -1,
+    "oy": 13
+  },
+  "wall_3": {
+    "scale": 1.0,
+    "ox": -1,
+    "oy": 11
+  },
+  "wall_4": {
+    "scale": 0.94,
+    "ox": 1,
+    "oy": 7
+  },
+  "wall_5": {
+    "scale": 0.68,
+    "ox": 0,
+    "oy": 2
+  },
+  "wall_6": {
+    "scale": 0.94,
+    "ox": -3,
+    "oy": 16
+  },
+  "wall_7": {
+    "scale": 0.78,
+    "ox": -2,
+    "oy": 9
+  },
+  "wall_8": {
+    "scale": 0.84,
+    "ox": -1,
+    "oy": 6
+  },
+  "wall_9": {
+    "scale": 0.96,
+    "ox": -1,
+    "oy": 7
+  },
+  "wall_10": {
+    "scale": 0.75,
+    "ox": -1,
+    "oy": 3
+  },
+  "wall_11": {
+    "scale": 0.91,
+    "ox": 0,
+    "oy": 4
+  },
+  "wall_12": {
+    "scale": 0.93,
+    "ox": 0,
+    "oy": 1
+  },
+  "wall_13": {
+    "scale": 0.85,
+    "ox": 0,
+    "oy": 1
+  },
+  "wall_14": {
+    "scale": 0.59,
+    "ox": 0,
+    "oy": -1
+  },
+  "wall_15": {
+    "scale": 0.85,
+    "ox": 0,
+    "oy": 3
+  },
+  "giant_bomb_1": {
+    "scale": 0.74,
+    "ox": 5,
+    "oy": 6
+  },
+  "giant_bomb_3": {
+    "scale": 0.72,
+    "ox": 2,
+    "oy": 0
+  },
+  "giant_bomb_5": {
+    "scale": 0.69,
+    "ox": 3,
+    "oy": 2
+  },
+  "giant_bomb_7": {
+    "scale": 0.7,
+    "ox": 4,
+    "oy": 2
+  },
+  "giant_bomb_11": {
+    "scale": 0.72,
+    "ox": 2,
+    "oy": -7
+  },
+  "hero_banner_empty": {
+    "scale": 0.76,
+    "ox": 1,
+    "oy": 0
+  },
+  "hero_banner_rc": {
+    "scale": 0.8,
+    "ox": 1,
+    "oy": 2
+  },
+  "inferno_tower_1": {
+    "scale": 0.7,
+    "ox": -2,
+    "oy": 1
+  },
+  "inferno_tower_2": {
+    "scale": 0.69,
+    "ox": -2,
+    "oy": -4
+  },
+  "inferno_tower_3": {
+    "scale": 0.72,
+    "ox": -2,
+    "oy": 1
+  },
+  "inferno_tower_4": {
+    "scale": 0.75,
+    "ox": -2,
+    "oy": -6
+  },
+  "inferno_tower_5": {
+    "scale": 0.71,
+    "ox": -1,
+    "oy": -6
+  },
+  "inferno_tower_6": {
+    "scale": 0.75,
+    "ox": -1,
+    "oy": -5
+  },
+  "inferno_tower_7": {
+    "scale": 0.73,
+    "ox": -2,
+    "oy": -6
+  },
+  "inferno_tower_8": {
+    "scale": 0.75,
+    "ox": -1,
+    "oy": -7
+  },
+  "inferno_tower_9": {
+    "scale": 0.76,
+    "ox": -1,
+    "oy": -8
+  },
+  "inferno_tower_10": {
+    "scale": 0.67,
+    "ox": -2,
+    "oy": -9
+  },
+  "inferno_tower_11": {
+    "scale": 0.72,
+    "ox": -3,
+    "oy": -10
+  },
+  "inferno_tower_12": {
+    "scale": 0.66,
+    "ox": -3,
+    "oy": -7
+  },
+  "inferno_tower_single_1": {
+    "scale": 0.7,
+    "ox": -2,
+    "oy": 1
+  },
+  "inferno_tower_single_2": {
+    "scale": 0.7,
+    "ox": -2,
+    "oy": -4
+  },
+  "inferno_tower_single_3": {
+    "scale": 0.73,
+    "ox": -2,
+    "oy": 1
+  },
+  "inferno_tower_single_4": {
+    "scale": 0.75,
+    "ox": -2,
+    "oy": -5
+  },
+  "inferno_tower_single_5": {
+    "scale": 0.72,
+    "ox": -1,
+    "oy": -6
+  },
+  "inferno_tower_single_6": {
+    "scale": 0.75,
+    "ox": -2,
+    "oy": -5
+  },
+  "inferno_tower_single_7": {
+    "scale": 0.76,
+    "ox": -3,
+    "oy": -6
+  },
+  "inferno_tower_single_8": {
+    "scale": 0.77,
+    "ox": -1,
+    "oy": -6
+  },
+  "inferno_tower_single_9": {
+    "scale": 0.75,
+    "ox": -1,
+    "oy": -7
+  },
+  "inferno_tower_single_10": {
+    "scale": 0.69,
+    "ox": -2,
+    "oy": -9
+  },
+  "inferno_tower_single_11": {
+    "scale": 0.71,
+    "ox": -3,
+    "oy": -10
+  },
+  "inferno_tower_single_12": {
+    "scale": 0.66,
+    "ox": -3,
+    "oy": -7
+  },
+  "air_defense_1": {
+    "scale": 0.375,
+    "ox": -1,
+    "oy": -14
+  },
+  "air_defense_2": {
+    "scale": 0.375,
+    "ox": 0,
+    "oy": -15
+  },
+  "air_defense_3": {
+    "scale": 0.379,
+    "ox": -2,
+    "oy": -16
+  },
+  "air_defense_4": {
+    "scale": 0.42,
+    "ox": -2,
+    "oy": -16
+  },
+  "air_defense_5": {
+    "scale": 0.436,
+    "ox": -1,
+    "oy": -17
+  },
+  "air_defense_6": {
+    "scale": 0.435,
+    "ox": -1,
+    "oy": -17
+  },
+  "air_defense_7": {
+    "scale": 0.592,
+    "ox": 2,
+    "oy": -15
+  },
+  "air_defense_8": {
+    "scale": 0.567,
+    "ox": 2,
+    "oy": -20
+  },
+  "air_defense_9": {
+    "scale": 0.559,
+    "ox": 2,
+    "oy": -16
+  },
+  "air_defense_10": {
+    "scale": 0.561,
+    "ox": 2,
+    "oy": -14
+  },
+  "air_defense_11": {
+    "scale": 0.595,
+    "ox": 3,
+    "oy": -13
+  },
+  "archer_tower_1": {
+    "scale": 0.441,
+    "ox": 0,
+    "oy": -15
+  },
+  "archer_tower_2": {
+    "scale": 0.53,
+    "ox": 0,
+    "oy": -12
+  },
+  "archer_tower_3": {
+    "scale": 0.53,
+    "ox": 0,
+    "oy": -15
+  },
+  "archer_tower_4": {
+    "scale": 0.536,
+    "ox": 1,
+    "oy": -15
+  },
+  "archer_tower_5": {
+    "scale": 0.52,
+    "ox": 0,
+    "oy": -14
+  },
+  "archer_tower_6": {
+    "scale": 0.52,
+    "ox": 0,
+    "oy": -15
+  },
+  "archer_tower_7": {
+    "scale": 0.505,
+    "ox": 0,
+    "oy": -16
+  },
+  "archer_tower_8": {
+    "scale": 0.529,
+    "ox": 0,
+    "oy": -15
+  },
+  "army_camp_1": {
+    "scale": 0.195,
+    "ox": 0,
+    "oy": -15
+  },
+  "army_camp_2": {
+    "scale": 0.53,
+    "ox": -1,
+    "oy": 8
+  },
+  "army_camp_3": {
+    "scale": 0.58,
+    "ox": -3,
+    "oy": 4
+  },
+  "army_camp_4": {
+    "scale": 0.53,
+    "ox": -2,
+    "oy": 7
+  },
+  "army_camp_5": {
+    "scale": 0.52,
+    "ox": -1,
+    "oy": 8
+  },
+  "army_camp_6": {
+    "scale": 0.58,
+    "ox": -3,
+    "oy": 6
+  },
+  "army_camp_7": {
+    "scale": 0.72,
+    "ox": -1,
+    "oy": 0
+  },
+  "army_camp_8": {
+    "scale": 0.71,
+    "ox": -3,
+    "oy": -4
+  },
+  "army_camp_9": {
+    "scale": 0.87,
+    "ox": 0,
+    "oy": -6
+  },
+  "army_camp_10": {
+    "scale": 0.61,
+    "ox": 0,
+    "oy": -5
+  },
+  "army_camp_11": {
+    "scale": 0.62,
+    "ox": 0,
+    "oy": -7
+  },
+  "army_camp_12": {
+    "scale": 0.64,
+    "ox": 1,
+    "oy": -7
+  },
+  "army_camp_13": {
+    "scale": 0.65,
+    "ox": 1,
+    "oy": -7
+  },
+  "barracks_1": {
+    "scale": 0.49,
+    "ox": 2,
+    "oy": -11
+  },
+  "barracks_2": {
+    "scale": 0.88,
+    "ox": -3,
+    "oy": -1
+  },
+  "barracks_3": {
+    "scale": 0.87,
+    "ox": -6,
+    "oy": -2
+  },
+  "barracks_4": {
+    "scale": 0.84,
+    "ox": -7,
+    "oy": -4
+  },
+  "barracks_8": {
+    "scale": 0.81,
+    "ox": 0,
+    "oy": -4
+  },
+  "barracks_9": {
+    "scale": 0.8,
+    "ox": 0,
+    "oy": -4
+  },
+  "barracks_10": {
+    "scale": 0.78,
+    "ox": -3,
+    "oy": -7
+  },
+  "barracks_18": {
+    "scale": 0.67,
+    "ox": -1,
+    "oy": -9
+  },
+  "barracks_19": {
+    "scale": 0.86,
+    "ox": 4,
+    "oy": -11
+  },
+  "bomb_tower_1": {
+    "scale": 0.49,
+    "ox": 0,
+    "oy": -13
+  },
+  "bomb_tower_2": {
+    "scale": 0.482,
+    "ox": 0,
+    "oy": -12
+  },
+  "bomb_tower_3": {
+    "scale": 0.555,
+    "ox": 0,
+    "oy": -14
+  },
+  "bomb_tower_4": {
+    "scale": 0.497,
+    "ox": 0,
+    "oy": -14
+  },
+  "bomb_tower_5": {
+    "scale": 0.494,
+    "ox": 0,
+    "oy": -14
+  },
+  "bomb_tower_6": {
+    "scale": 0.484,
+    "ox": 0,
+    "oy": -14
+  },
+  "bomb_tower_7": {
+    "scale": 0.52,
+    "ox": 0,
+    "oy": -14
+  },
+  "bomb_tower_8": {
+    "scale": 0.53,
+    "ox": 1,
+    "oy": -15
+  },
+  "bomb_tower_9": {
+    "scale": 0.487,
+    "ox": 0,
+    "oy": -16
+  },
+  "bomb_tower_10": {
+    "scale": 0.46,
+    "ox": 0,
+    "oy": -16
+  },
+  "bomb_tower_11": {
+    "scale": 0.535,
+    "ox": 1,
+    "oy": -15
+  },
+  "bomb_tower_12": {
+    "scale": 0.478,
+    "ox": 2,
+    "oy": -20
+  },
+  "bomb_tower_13": {
+    "scale": 0.489,
+    "ox": 1,
+    "oy": -20
+  },
+  "cannon_1": {
+    "scale": 0.236,
+    "ox": 1,
+    "oy": -4
+  },
+  "cannon_2": {
+    "scale": 0.246,
+    "ox": 0,
+    "oy": -6
+  },
+  "cannon_3": {
+    "scale": 0.303,
+    "ox": 1,
+    "oy": -5
+  },
+  "cannon_4": {
+    "scale": 0.372,
+    "ox": 2,
+    "oy": -6
+  },
+  "cannon_5": {
+    "scale": 0.367,
+    "ox": 0,
+    "oy": -8
+  },
+  "cannon_6": {
+    "scale": 0.337,
+    "ox": 1,
+    "oy": -2
+  },
+  "cannon_7": {
+    "scale": 0.535,
+    "ox": 1,
+    "oy": -3
+  },
+  "cannon_8": {
+    "scale": 0.544,
+    "ox": 2,
+    "oy": -3
+  },
+  "cannon_9": {
+    "scale": 0.571,
+    "ox": 2,
+    "oy": -6
+  },
+  "cannon_10": {
+    "scale": 0.514,
+    "ox": 1,
+    "oy": -8
+  },
+  "cannon_11": {
+    "scale": 0.542,
+    "ox": 2,
+    "oy": -6
+  },
+  "cannon_12": {
+    "scale": 0.643,
+    "ox": 2,
+    "oy": -6
+  },
+  "cannon_13": {
+    "scale": 0.68,
+    "ox": 1,
+    "oy": -5
+  },
+  "cannon_geared_7": {
+    "scale": 0.584,
+    "ox": 2,
+    "oy": 3
+  },
+  "cannon_geared_8": {
+    "scale": 0.579,
+    "ox": 1,
+    "oy": 2
+  },
+  "cannon_geared_9": {
+    "scale": 0.61,
+    "ox": 0,
+    "oy": -3
+  },
+  "cannon_geared_10": {
+    "scale": 0.58,
+    "ox": 0,
+    "oy": -4
+  },
+  "cannon_geared_11": {
+    "scale": 0.581,
+    "ox": 1,
+    "oy": -3
+  },
+  "cannon_geared_12": {
+    "scale": 0.679,
+    "ox": 2,
+    "oy": -2
+  },
+  "cannon_geared_13": {
+    "scale": 0.648,
+    "ox": 0,
+    "oy": -4
+  },
+  "dark_elixir_drill_1": {
+    "scale": 0.72,
+    "ox": -1,
+    "oy": -2
+  },
+  "dark_elixir_drill_2": {
+    "scale": 0.73,
+    "ox": 0,
+    "oy": 0
+  },
+  "dark_elixir_drill_3": {
+    "scale": 0.73,
+    "ox": -2,
+    "oy": -2
+  },
+  "dark_elixir_drill_4": {
+    "scale": 0.74,
+    "ox": 0,
+    "oy": 0
+  },
+  "dark_elixir_drill_5": {
+    "scale": 0.89,
+    "ox": -5,
+    "oy": -7
+  },
+  "dark_elixir_drill_6": {
+    "scale": 0.72,
+    "ox": 3,
+    "oy": -10
+  },
+  "dark_elixir_drill_7": {
+    "scale": 0.69,
+    "ox": 3,
+    "oy": -11
+  },
+  "dark_elixir_drill_8": {
+    "scale": 0.66,
+    "ox": 4,
+    "oy": -11
+  },
+  "dark_elixir_drill_9": {
+    "scale": 0.71,
+    "ox": 1,
+    "oy": -6
+  },
+  "dark_elixir_drill_10": {
+    "scale": 0.74,
+    "ox": -2,
+    "oy": -5
+  },
+  "dark_elixir_drill_11": {
+    "scale": 0.75,
+    "ox": -3,
+    "oy": -10
+  },
+  "dark_elixir_storage_1": {
+    "scale": 0.7,
+    "ox": -1,
+    "oy": 26
+  },
+  "dark_elixir_storage_2": {
+    "scale": 0.79,
+    "ox": 0,
+    "oy": 24
+  },
+  "dark_elixir_storage_3": {
+    "scale": 0.86,
+    "ox": 0,
+    "oy": 3
+  },
+  "dark_elixir_storage_4": {
+    "scale": 0.88,
+    "ox": 0,
+    "oy": 4
+  },
+  "dark_spell_factory_2": {
+    "scale": 0.77,
+    "ox": -1,
+    "oy": 5
+  },
+  "dark_spell_factory_3": {
+    "scale": 0.92,
+    "ox": -1,
+    "oy": 1
+  },
+  "dark_spell_factory_4": {
+    "scale": 0.89,
+    "ox": 0,
+    "oy": -3
+  },
+  "dark_spell_factory_5": {
+    "scale": 0.84,
+    "ox": -1,
+    "oy": -3
+  },
+  "dark_spell_factory_6": {
+    "scale": 0.81,
+    "ox": 0,
+    "oy": -3
+  },
+  "dark_spell_factory_7": {
+    "scale": 0.85,
+    "ox": -1,
+    "oy": -8
+  },
+  "elixir_collector_1": {
+    "scale": 0.468,
+    "ox": -7,
+    "oy": -6
+  },
+  "elixir_collector_2": {
+    "scale": 0.77,
+    "ox": 1,
+    "oy": 16
+  },
+  "elixir_collector_3": {
+    "scale": 0.76,
+    "ox": 3,
+    "oy": 14
+  },
+  "elixir_collector_4": {
+    "scale": 0.78,
+    "ox": 2,
+    "oy": 13
+  },
+  "elixir_collector_5": {
+    "scale": 0.77,
+    "ox": 4,
+    "oy": 5
+  },
+  "elixir_collector_6": {
+    "scale": 0.76,
+    "ox": -3,
+    "oy": 1
+  },
+  "elixir_collector_7": {
+    "scale": 0.78,
+    "ox": -4,
+    "oy": -5
+  },
+  "elixir_collector_8": {
+    "scale": 0.67,
+    "ox": -3,
+    "oy": 1
+  },
+  "elixir_collector_9": {
+    "scale": 0.68,
+    "ox": -3,
+    "oy": -4
+  },
+  "elixir_collector_10": {
+    "scale": 0.83,
+    "ox": -1,
+    "oy": -1
+  },
+  "elixir_collector_11": {
+    "scale": 0.81,
+    "ox": -1,
+    "oy": -1
+  },
+  "elixir_collector_12": {
+    "scale": 0.85,
+    "ox": -2,
+    "oy": -5
+  },
+  "elixir_collector_13": {
+    "scale": 0.77,
+    "ox": -1,
+    "oy": -6
+  },
+  "elixir_collector_14": {
+    "scale": 0.76,
+    "ox": -2,
+    "oy": -8
+  },
+  "elixir_collector_15": {
+    "scale": 0.78,
+    "ox": -2,
+    "oy": -8
+  },
+  "elixir_collector_16": {
+    "scale": 0.71,
+    "ox": -2,
+    "oy": -7
+  },
+  "elixir_collector_17": {
+    "scale": 0.74,
+    "ox": -1,
+    "oy": -14
+  },
+  "elixir_storage_1": {
+    "scale": 0.96,
+    "ox": -1,
+    "oy": 2
+  },
+  "elixir_storage_2": {
+    "scale": 1.9,
+    "ox": -4,
+    "oy": 38
+  },
+  "elixir_storage_3": {
+    "scale": 0.19,
+    "ox": -3,
+    "oy": 25
+  },
+  "elixir_storage_4": {
+    "scale": 0.28,
+    "ox": -1,
+    "oy": 31
+  },
+  "elixir_storage_5": {
+    "scale": 0.41,
+    "ox": 0,
+    "oy": 18
+  },
+  "elixir_storage_6": {
+    "scale": 0.43,
+    "ox": -3,
+    "oy": 10
+  },
+  "elixir_storage_7": {
+    "scale": 0.5,
+    "ox": -1,
+    "oy": 11
+  },
+  "elixir_storage_8": {
+    "scale": 0.56,
+    "ox": -5,
+    "oy": 10
+  },
+  "elixir_storage_9": {
+    "scale": 0.91,
+    "ox": 1,
+    "oy": 27
+  },
+  "elixir_storage_10": {
+    "scale": 0.85,
+    "ox": -1,
+    "oy": 7
+  },
+  "elixir_storage_11": {
+    "scale": 0.85,
+    "ox": -1,
+    "oy": 8
+  },
+  "elixir_storage_17": {
+    "scale": 0.79,
+    "ox": -1,
+    "oy": 6
+  },
+  "firespitter_1": {
+    "scale": 0.824,
+    "ox": 0,
+    "oy": -6
+  },
+  "firespitter_2": {
+    "scale": 0.818,
+    "ox": 1,
+    "oy": -7
+  },
+  "firespitter_3": {
+    "scale": 0.885,
+    "ox": 0,
+    "oy": -3
+  },
+  "gold_mine_1": {
+    "scale": 0.547,
+    "ox": 6,
+    "oy": -9
+  },
+  "gold_mine_2": {
+    "scale": 0.73,
+    "ox": 5,
+    "oy": -3
+  },
+  "gold_mine_3": {
+    "scale": 0.76,
+    "ox": 5,
+    "oy": -4
+  },
+  "gold_mine_4": {
+    "scale": 0.8,
+    "ox": 3,
+    "oy": -1
+  },
+  "gold_mine_5": {
+    "scale": 0.69,
+    "ox": 0,
+    "oy": 4
+  },
+  "gold_mine_6": {
+    "scale": 0.67,
+    "ox": 2,
+    "oy": 2
+  },
+  "gold_mine_7": {
+    "scale": 0.7,
+    "ox": 1,
+    "oy": 1
+  },
+  "gold_mine_8": {
+    "scale": 0.78,
+    "ox": 0,
+    "oy": -2
+  },
+  "gold_mine_9": {
+    "scale": 0.88,
+    "ox": 3,
+    "oy": -5
+  },
+  "gold_mine_10": {
+    "scale": 0.82,
+    "ox": 1,
+    "oy": -9
+  },
+  "gold_mine_11": {
+    "scale": 0.87,
+    "ox": 2,
+    "oy": -11
+  },
+  "gold_mine_12": {
+    "scale": 0.9,
+    "ox": 0,
+    "oy": -12
+  },
+  "gold_mine_13": {
+    "scale": 0.83,
+    "ox": 2,
+    "oy": -12
+  },
+  "gold_mine_14": {
+    "scale": 0.83,
+    "ox": 0,
+    "oy": -9
+  },
+  "gold_mine_15": {
+    "scale": 0.86,
+    "ox": 2,
+    "oy": -5
+  },
+  "gold_mine_16": {
+    "scale": 0.84,
+    "ox": 4,
+    "oy": -8
+  },
+  "gold_mine_17": {
+    "scale": 0.83,
+    "ox": 3,
+    "oy": -8
+  },
+  "gold_storage_1": {
+    "scale": 0.424,
+    "ox": 0,
+    "oy": 11
+  },
+  "gold_storage_2": {
+    "scale": 0.76,
+    "ox": 0,
+    "oy": 23
+  },
+  "gold_storage_3": {
+    "scale": 0.78,
+    "ox": 0,
+    "oy": 19
+  },
+  "gold_storage_4": {
+    "scale": 0.87,
+    "ox": 0,
+    "oy": 19
+  },
+  "gold_storage_5": {
+    "scale": 0.95,
+    "ox": -1,
+    "oy": 20
+  },
+  "gold_storage_6": {
+    "scale": 0.98,
+    "ox": -1,
+    "oy": 20
+  },
+  "gold_storage_7": {
+    "scale": 0.86,
+    "ox": 0,
+    "oy": 12
+  },
+  "gold_storage_8": {
+    "scale": 0.87,
+    "ox": 0,
+    "oy": 10
+  },
+  "gold_storage_9": {
+    "scale": 0.9,
+    "ox": 0,
+    "oy": 9
+  },
+  "gold_storage_10": {
+    "scale": 0.92,
+    "ox": 0,
+    "oy": 8
+  },
+  "archer_queen_altar": {
+    "scale": 0.84,
+    "ox": 4,
+    "oy": 2
+  },
+  "barbarian_king_altar": {
+    "scale": 0.62,
+    "ox": -1,
+    "oy": 5
+  },
+  "grand_warden_altar": {
+    "scale": 0.73,
+    "ox": 0,
+    "oy": -3
+  },
+  "royal_champion_altar": {
+    "scale": 0.74,
+    "ox": 0,
+    "oy": -2
+  },
+  "laboratory_1": {
+    "scale": 0.74,
+    "ox": -4,
+    "oy": -6
+  },
+  "laboratory_2": {
+    "scale": 0.81,
+    "ox": -4,
+    "oy": -6
+  },
+  "laboratory_3": {
+    "scale": 0.79,
+    "ox": -4,
+    "oy": -6
+  },
+  "laboratory_4": {
+    "scale": 0.81,
+    "ox": -4,
+    "oy": -6
+  },
+  "laboratory_5": {
+    "scale": 0.85,
+    "ox": -4,
+    "oy": -6
+  },
+  "laboratory_6": {
+    "scale": 0.82,
+    "ox": -4,
+    "oy": -6
+  },
+  "laboratory_7": {
+    "scale": 0.92,
+    "ox": -3,
+    "oy": -7
+  },
+  "laboratory_8": {
+    "scale": 0.93,
+    "ox": -3,
+    "oy": -7
+  },
+  "laboratory_9": {
+    "scale": 0.78,
+    "ox": -3,
+    "oy": -11
+  },
+  "laboratory_10": {
+    "scale": 0.91,
+    "ox": -3,
+    "oy": -8
+  },
+  "laboratory_11": {
+    "scale": 0.88,
+    "ox": -3,
+    "oy": -10
+  },
+  "laboratory_12": {
+    "scale": 0.84,
+    "ox": -3,
+    "oy": -11
+  },
+  "laboratory_13": {
+    "scale": 0.84,
+    "ox": -4,
+    "oy": -11
+  },
+  "laboratory_14": {
+    "scale": 0.88,
+    "ox": -3,
+    "oy": -10
+  },
+  "laboratory_15": {
+    "scale": 0.91,
+    "ox": -3,
+    "oy": -12
+  },
+  "laboratory_16": {
+    "scale": 0.92,
+    "ox": 0,
+    "oy": -12
+  },
+  "monolith_1": {
+    "scale": 0.92,
+    "ox": 0,
+    "oy": -1
+  },
+  "monolith_2": {
+    "scale": 0.94,
+    "ox": 0,
+    "oy": -2
+  },
+  "monolith_3": {
+    "scale": 0.91,
+    "ox": 0,
+    "oy": -4
+  },
+  "monolith_4": {
+    "scale": 0.93,
+    "ox": 0,
+    "oy": -3
+  },
+  "mortar_1": {
+    "scale": 0.38,
+    "ox": 1,
+    "oy": 48
+  },
+  "mortar_2": {
+    "scale": 0.45,
+    "ox": 0,
+    "oy": 46
+  },
+  "mortar_3": {
+    "scale": 0.49,
+    "ox": 0,
+    "oy": 31
+  },
+  "mortar_4": {
+    "scale": 0.5,
+    "ox": 0,
+    "oy": 32
+  },
+  "mortar_5": {
+    "scale": 0.49,
+    "ox": 0,
+    "oy": 31
+  },
+  "mortar_6": {
+    "scale": 0.49,
+    "ox": 0,
+    "oy": 31
+  },
+  "mortar_7": {
+    "scale": 0.84,
+    "ox": -4,
+    "oy": 28
+  },
+  "mortar_8": {
+    "scale": 0.9,
+    "ox": -2,
+    "oy": 16
+  },
+  "mortar_9": {
+    "scale": 0.83,
+    "ox": -3,
+    "oy": 10
+  },
+  "mortar_10": {
+    "scale": 0.81,
+    "ox": -1,
+    "oy": -3
+  },
+  "mortar_11": {
+    "scale": 0.86,
+    "ox": -2,
+    "oy": -2
+  },
+  "mortar_12": {
+    "scale": 0.85,
+    "ox": 0,
+    "oy": -3
+  },
+  "mortar_13": {
+    "scale": 0.79,
+    "ox": -1,
+    "oy": -6
+  },
+  "mortar_14": {
+    "scale": 0.72,
+    "ox": 2,
+    "oy": -6
+  },
+  "mortar_15": {
+    "scale": 0.74,
+    "ox": 2,
+    "oy": -1
+  },
+  "mortar_16": {
+    "scale": 0.72,
+    "ox": 1,
+    "oy": -3
+  },
+  "mortar_17": {
+    "scale": 0.75,
+    "ox": 1,
+    "oy": -4
+  },
+  "mortar_18": {
+    "scale": 0.72,
+    "ox": 2,
+    "oy": -4
+  },
+  "mortar_geared_8": {
+    "scale": 0.88,
+    "ox": 0,
+    "oy": 15
+  },
+  "mortar_geared_9": {
+    "scale": 0.87,
+    "ox": -2,
+    "oy": 10
+  },
+  "mortar_geared_10": {
+    "scale": 0.91,
+    "ox": 2,
+    "oy": 6
+  },
+  "mortar_geared_11": {
+    "scale": 0.83,
+    "ox": -1,
+    "oy": 1
+  },
+  "mortar_geared_12": {
+    "scale": 0.79,
+    "ox": -2,
+    "oy": -5
+  },
+  "mortar_geared_13": {
+    "scale": 0.83,
+    "ox": 0,
+    "oy": -4
+  },
+  "mortar_geared_14": {
+    "scale": 0.74,
+    "ox": 2,
+    "oy": -5
+  },
+  "mortar_geared_15": {
+    "scale": 0.78,
+    "ox": 1,
+    "oy": 1
+  },
+  "mortar_geared_16": {
+    "scale": 0.73,
+    "ox": 2,
+    "oy": -3
+  },
+  "mortar_geared_17": {
+    "scale": 0.73,
+    "ox": 1,
+    "oy": -9
+  },
+  "mortar_geared_18": {
+    "scale": 0.72,
+    "ox": 3,
+    "oy": -4
+  },
+  "multi_gear_tower_1": {
+    "scale": 0.94,
+    "ox": 0,
+    "oy": -10
+  },
+  "multi_gear_tower_2": {
+    "scale": 0.95,
+    "ox": 0,
+    "oy": -10
+  },
+  "multi_gear_tower_longrange_1": {
+    "scale": 0.94,
+    "ox": 0,
+    "oy": -4
+  },
+  "multi_gear_tower_longrange_2": {
+    "scale": 0.95,
+    "ox": 0,
+    "oy": -5
+  },
+  "scattershot_1": {
+    "scale": 0.9,
+    "ox": -3,
+    "oy": 4
+  },
+  "scattershot_2": {
+    "scale": 0.91,
+    "ox": -3,
+    "oy": 0
+  },
+  "scattershot_3": {
+    "scale": 0.88,
+    "ox": -3,
+    "oy": -3
+  },
+  "scattershot_4": {
+    "scale": 0.9,
+    "ox": -3,
+    "oy": -4
+  },
+  "scattershot_5": {
+    "scale": 0.85,
+    "ox": -3,
+    "oy": -6
+  },
+  "scattershot_6": {
+    "scale": 0.87,
+    "ox": -2,
+    "oy": -8
+  },
+  "spell_factory_1": {
+    "scale": 0.76,
+    "ox": 0,
+    "oy": 11
+  },
+  "spell_factory_2": {
+    "scale": 0.73,
+    "ox": 1,
+    "oy": 5
+  },
+  "spell_factory_3": {
+    "scale": 0.76,
+    "ox": 1,
+    "oy": 6
+  },
+  "workshop_1": {
+    "scale": 0.96,
+    "ox": -2,
+    "oy": -16
+  },
+  "workshop_2": {
+    "scale": 0.95,
+    "ox": -3,
+    "oy": -16
+  },
+  "workshop_3": {
+    "scale": 0.95,
+    "ox": -3,
+    "oy": -16
+  },
+  "workshop_4": {
+    "scale": 0.94,
+    "ox": -3,
+    "oy": -16
+  },
+  "workshop_5": {
+    "scale": 0.95,
+    "ox": -3,
+    "oy": -16
+  },
+  "workshop_6": {
+    "scale": 0.96,
+    "ox": -3,
+    "oy": -15
+  },
+  "workshop_7": {
+    "scale": 0.97,
+    "ox": -3,
+    "oy": -14
+  },
+  "workshop_8": {
+    "scale": 0.94,
+    "ox": 35,
+    "oy": -298
+  },
+  "cannon_21": {
+    "scale": 0.804,
+    "ox": 0,
+    "oy": -7
+  },
+  "cannon_20": {
+    "scale": 0.797,
+    "ox": 0,
+    "oy": -7
+  },
+  "cannon_19": {
+    "scale": 0.759,
+    "ox": 1,
+    "oy": -7
+  },
+  "air_defense_12": {
+    "scale": 0.584,
+    "ox": 2,
+    "oy": -18
+  },
+  "air_defense_13": {
+    "scale": 0.635,
+    "ox": 1,
+    "oy": -13
+  },
+  "air_defense_14": {
+    "scale": 0.653,
+    "ox": 1,
+    "oy": -13
+  },
+  "air_defense_15": {
+    "scale": 0.625,
+    "ox": 3,
+    "oy": -16
+  },
+  "air_defense_16": {
+    "scale": 0.659,
+    "ox": 2,
+    "oy": -17
+  },
+  "air_sweeper_7": {
+    "scale": 0.831,
+    "ox": 0,
+    "oy": -2
+  },
+  "air_sweeper_6": {
+    "scale": 0.854,
+    "ox": 0,
+    "oy": -3
+  },
+  "air_sweeper_5": {
+    "scale": 0.841,
+    "ox": 0,
+    "oy": -3
+  },
+  "air_sweeper_4": {
+    "scale": 0.881,
+    "ox": 0,
+    "oy": -1
+  },
+  "air_sweeper_1": {
+    "scale": 0.873,
+    "ox": 0,
+    "oy": 0
+  },
+  "air_sweeper_2": {
+    "scale": 0.873,
+    "ox": 0,
+    "oy": 0
+  },
+  "air_sweeper_3": {
+    "scale": 0.884,
+    "ox": -1,
+    "oy": 0
+  },
+  "archer_tower_10": {
+    "scale": 0.597,
+    "ox": 0,
+    "oy": -20
+  },
+  "archer_tower_11": {
+    "scale": 0.606,
+    "ox": 0,
+    "oy": -20
+  },
+  "archer_tower_12": {
+    "scale": 0.631,
+    "ox": 0,
+    "oy": -18
+  },
+  "archer_tower_13": {
+    "scale": 0.598,
+    "ox": 0,
+    "oy": -20
+  },
+  "archer_tower_14": {
+    "scale": 0.612,
+    "ox": -1,
+    "oy": -20
+  },
+  "archer_tower_15": {
+    "scale": 0.625,
+    "ox": 0,
+    "oy": -19
+  },
+  "archer_tower_16": {
+    "scale": 0.678,
+    "ox": 0,
+    "oy": -13
+  },
+  "archer_tower_17": {
+    "scale": 0.671,
+    "ox": -1,
+    "oy": -14
+  },
+  "archer_tower_18": {
+    "scale": 0.668,
+    "ox": -1,
+    "oy": -16
+  },
+  "archer_tower_19": {
+    "scale": 0.635,
+    "ox": -1,
+    "oy": -19
+  },
+  "archer_tower_20": {
+    "scale": 0.608,
+    "ox": -1,
+    "oy": -22
+  },
+  "archer_tower_21": {
+    "scale": 0.617,
+    "ox": -2,
+    "oy": -16
+  },
+  "archer_tower_9": {
+    "scale": 0.601,
+    "ox": 0,
+    "oy": -18
+  },
+  "archer_tower_geared_10": {
+    "scale": 0.605,
+    "ox": 1,
+    "oy": -10
+  },
+  "archer_tower_geared_11": {
+    "scale": 0.687,
+    "ox": 0,
+    "oy": -10
+  },
+  "archer_tower_geared_12": {
+    "scale": 0.685,
+    "ox": 0,
+    "oy": -10
+  },
+  "archer_tower_geared_13": {
+    "scale": 0.687,
+    "ox": 1,
+    "oy": -10
+  },
+  "archer_tower_geared_14": {
+    "scale": 0.707,
+    "ox": 0,
+    "oy": -6
+  },
+  "archer_tower_geared_15": {
+    "scale": 0.701,
+    "ox": 0,
+    "oy": -10
+  },
+  "archer_tower_geared_16": {
+    "scale": 0.691,
+    "ox": 0,
+    "oy": -8
+  },
+  "archer_tower_geared_17": {
+    "scale": 0.676,
+    "ox": 0,
+    "oy": -9
+  },
+  "archer_tower_geared_18": {
+    "scale": 0.697,
+    "ox": 0,
+    "oy": -7
+  },
+  "archer_tower_geared_19": {
+    "scale": 0.699,
+    "ox": 0,
+    "oy": -9
+  },
+  "archer_tower_geared_20": {
+    "scale": 0.672,
+    "ox": -1,
+    "oy": -8
+  },
+  "archer_tower_geared_21": {
+    "scale": 0.627,
+    "ox": -2,
+    "oy": -8
+  },
+  "cannon_14": {
+    "scale": 0.731,
+    "ox": 1,
+    "oy": -6
+  },
+  "cannon_15": {
+    "scale": 0.752,
+    "ox": 2,
+    "oy": -6
+  },
+  "cannon_16": {
+    "scale": 0.769,
+    "ox": 1,
+    "oy": -6
+  },
+  "cannon_17": {
+    "scale": 0.77,
+    "ox": 1,
+    "oy": -5
+  },
+  "cannon_18": {
+    "scale": 0.748,
+    "ox": 0,
+    "oy": -7
+  },
+  "hidden_tesla_6": {
+    "scale": 0.718,
+    "ox": -1,
+    "oy": -10
+  },
+  "hidden_tesla_11": {
+    "scale": 0.772,
+    "ox": 1,
+    "oy": -9
+  },
+  "hidden_tesla_15": {
+    "scale": 0.762,
+    "ox": 0,
+    "oy": -5
+  },
+  "hidden_tesla_1": {
+    "scale": 0.736,
+    "ox": -2,
+    "oy": -7
+  },
+  "hidden_tesla_3": {
+    "scale": 0.746,
+    "ox": -1,
+    "oy": -8
+  },
+  "eagle_artillery_6": {
+    "scale": 0.676,
+    "ox": 0,
+    "oy": -12
+  },
+  "hidden_tesla_5": {
+    "scale": 0.73,
+    "ox": -1,
+    "oy": -10
+  },
+  "hidden_tesla_17": {
+    "scale": 0.75,
+    "ox": 2,
+    "oy": -6
+  },
+  "hidden_tesla_2": {
+    "scale": 0.711,
+    "ox": -1,
+    "oy": -9
+  },
+  "hidden_tesla_16": {
+    "scale": 0.76,
+    "ox": 1,
+    "oy": -5
+  },
+  "hidden_tesla_14": {
+    "scale": 0.801,
+    "ox": 0,
+    "oy": -6
+  },
+  "hidden_tesla_7": {
+    "scale": 0.648,
+    "ox": 0,
+    "oy": -11
+  },
+  "cannon_geared_19": {
+    "scale": 0.756,
+    "ox": 2,
+    "oy": -6
+  },
+  "hidden_tesla_12": {
+    "scale": 0.787,
+    "ox": 1,
+    "oy": -11
+  },
+  "hidden_tesla_13": {
+    "scale": 0.793,
+    "ox": 1,
+    "oy": -7
+  },
+  "cannon_geared_21": {
+    "scale": 0.781,
+    "ox": 0,
+    "oy": -7
+  },
+  "cannon_geared_17": {
+    "scale": 0.771,
+    "ox": 1,
+    "oy": -4
+  },
+  "town_hall_1": {
+    "scale": 0.631,
+    "ox": 1,
+    "oy": -22
+  },
+  "cannon_geared_18": {
+    "scale": 0.755,
+    "ox": 2,
+    "oy": -6
+  },
+  "town_hall_2": {
+    "scale": 0.664,
+    "ox": 0,
+    "oy": -19
+  },
+  "cannon_geared_20": {
+    "scale": 0.788,
+    "ox": 0,
+    "oy": -8
+  },
+  "hidden_tesla_4": {
+    "scale": 0.745,
+    "ox": -1,
+    "oy": -8
+  },
+  "eagle_artillery_7": {
+    "scale": 0.647,
+    "ox": 0,
+    "oy": -16
+  },
+  "town_hall_18": {
+    "scale": 0.898,
+    "ox": 2,
+    "oy": -7
+  },
+  "cannon_geared_16": {
+    "scale": 0.752,
+    "ox": 1,
+    "oy": -5
+  },
+  "cannon_geared_14": {
+    "scale": 0.701,
+    "ox": 0,
+    "oy": -5
+  },
+  "eagle_artillery_3": {
+    "scale": 0.637,
+    "ox": 0,
+    "oy": -12
+  },
+  "eagle_artillery_5": {
+    "scale": 0.685,
+    "ox": 0,
+    "oy": -16
+  },
+  "hidden_tesla_9": {
+    "scale": 0.64,
+    "ox": 0,
+    "oy": -12
+  },
+  "town_hall_3": {
+    "scale": 0.685,
+    "ox": 0,
+    "oy": -16
+  },
+  "cannon_geared_15": {
+    "scale": 0.738,
+    "ox": 1,
+    "oy": -5
+  },
+  "hidden_tesla_8": {
+    "scale": 0.63,
+    "ox": -1,
+    "oy": -11
+  },
+  "hidden_tesla_10": {
+    "scale": 0.765,
+    "ox": 3,
+    "oy": -10
+  },
+  "town_hall_17": {
+    "scale": 0.929,
+    "ox": 0,
+    "oy": -3
+  },
+  "eagle_artillery_4": {
+    "scale": 0.667,
+    "ox": -1,
+    "oy": -14
+  },
+  "eagle_artillery_2": {
+    "scale": 0.718,
+    "ox": 1,
+    "oy": -15
+  },
+  "eagle_artillery_1": {
+    "scale": 0.718,
+    "ox": 2,
+    "oy": -14
+  },
+  "town_hall_7": {
+    "scale": 0.677,
+    "ox": -2,
+    "oy": -16
+  },
+  "town_hall_8": {
+    "scale": 0.701,
+    "ox": -1,
+    "oy": -15
+  },
+  "town_hall_9": {
+    "scale": 0.717,
+    "ox": 0,
+    "oy": -18
+  },
+  "builder_hut_1": {
+    "scale": 0.576,
+    "ox": 0,
+    "oy": -8
+  },
+  "town_hall_6": {
+    "scale": 0.676,
+    "ox": -2,
+    "oy": -18
+  },
+  "town_hall_5": {
+    "scale": 0.675,
+    "ox": -1,
+    "oy": -18
+  },
+  "town_hall_4": {
+    "scale": 0.88,
+    "ox": -1,
+    "oy": -17
+  }
+}

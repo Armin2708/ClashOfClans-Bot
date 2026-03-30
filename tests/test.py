@@ -10,7 +10,7 @@ Usage:
     python test.py buttons      # Test button detection
     python test.py loot         # Test enemy loot reading (must be on scout screen)
     python test.py screen_state # Test screen state detection
-    python test.py roi_speed    # Benchmark ROI vs full-image detection
+    python test.py yolo_speed   # Benchmark YOLO detection speed
     python test.py popups       # Test popup detection
     python test.py templates    # Validate critical templates
     python test.py troop_slots  # Test troop slot detection (must be on battle screen)
@@ -187,49 +187,26 @@ def test_screen_state():
         _warn("State is 'unknown' — bot may not recognize current screen")
 
 
-def test_roi_speed():
-    print("\n>>> TEST: ROI Speed Benchmark")
-    print("Comparing ROI-cropped vs full-image template matching...")
+def test_yolo_speed():
+    print("\n>>> TEST: YOLO Detection Speed Benchmark")
     from bot.screen import screenshot
-    from bot.vision import detect_screen_state, _find_in_roi, _get_template_gray, get_template
-    from bot.utils import find_template
-    from bot.config import SCREEN_DETECT_THRESHOLD, BUTTON_ROIS
+    from bot.vision import detect_screen_state
     img = screenshot()
 
-    if len(img.shape) == 3:
-        import cv2
-        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    else:
-        gray = img
-
-    # Benchmark ROI-based detection
-    iterations = 50
+    iterations = 20
     start = time.time()
     for _ in range(iterations):
         detect_screen_state(img)
-    roi_time = (time.time() - start) / iterations * 1000
+    avg_ms = (time.time() - start) / iterations * 1000
 
-    # Benchmark full-image detection (bypass ROI)
-    buttons_to_check = ["stars_screen", "return_home", "next_base", "end_battle",
-                        "start_battle", "find_match", "attack_button"]
-    start = time.time()
-    for _ in range(iterations):
-        for name in buttons_to_check:
-            tmpl = get_template(name)
-            find_template(img, tmpl, threshold=SCREEN_DETECT_THRESHOLD)
-    full_time = (time.time() - start) / iterations * 1000
+    print(f"  {iterations} iterations: avg {avg_ms:.1f}ms per call")
 
-    print(f"  ROI-based:    {roi_time:.1f}ms avg ({iterations} iterations)")
-    print(f"  Full-image:   {full_time:.1f}ms avg ({iterations} iterations)")
-    speedup = full_time / roi_time if roi_time > 0 else 0
-    print(f"  Speedup:      {speedup:.1f}x")
-
-    if speedup > 1.5:
-        _pass(f"ROI matching is {speedup:.1f}x faster")
-    elif speedup > 1.0:
-        _pass(f"ROI matching is {speedup:.1f}x faster (modest gain)")
+    if avg_ms < 100:
+        _pass(f"YOLO detection: {avg_ms:.1f}ms (fast)")
+    elif avg_ms < 300:
+        _pass(f"YOLO detection: {avg_ms:.1f}ms (acceptable)")
     else:
-        _warn(f"ROI matching is not faster ({speedup:.1f}x) — check BUTTON_ROIS")
+        _warn(f"YOLO detection: {avg_ms:.1f}ms (slow)")
 
 
 def test_popups():
@@ -333,8 +310,8 @@ def run_all():
     test_resources()
     input("\nPress Enter to continue to button test...")
     test_buttons()
-    input("\nPress Enter to continue to ROI speed benchmark...")
-    test_roi_speed()
+    input("\nPress Enter to continue to YOLO speed benchmark...")
+    test_yolo_speed()
 
     print_summary()
 
@@ -372,7 +349,7 @@ if __name__ == "__main__":
         "loot": test_loot,
         "battle": test_battle,
         "screen_state": test_screen_state,
-        "roi_speed": test_roi_speed,
+        "yolo_speed": test_yolo_speed,
         "popups": test_popups,
         "templates": test_templates,
         "troop_slots": test_troop_slots,

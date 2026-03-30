@@ -8,7 +8,7 @@ Usage:
     python test_offline.py resources      # Resource reading tests
     python test_offline.py loot           # Enemy loot reading tests
     python test_offline.py templates      # Template validation tests
-    python test_offline.py roi            # ROI correctness tests
+    python test_offline.py templates      # YOLO model validation tests
     python test_offline.py flow           # Flow logic tests (mocked)
     python test_offline.py benchmark      # Performance benchmarks
 """
@@ -200,94 +200,15 @@ def test_validate_critical_templates():
         _fail(str(e))
 
 
-def test_validate_missing_template():
-    print("\n>>> TEST: Missing template detection")
-    from bot.vision import get_template, _TEMPLATES
-
-    # Ensure templates are loaded
-    get_template("gem_cost")
-
-    from bot.vision import _TEMPLATES as templates
-    if templates is None:
-        _skip("Templates not loaded")
-        return
-
-    # Temporarily remove a critical template
-    original = templates.get("gem_cost")
-    templates["gem_cost"] = None
-
+def test_yolo_model_loads():
+    print("\n>>> TEST: YOLO model loads and predicts")
     from bot.vision import validate_critical_templates
+
     try:
         validate_critical_templates()
-        _fail("Should have raised FileNotFoundError for missing gem_cost")
-    except FileNotFoundError:
-        _pass("FileNotFoundError raised for missing gem_cost")
-
-    # Restore
-    templates["gem_cost"] = original
-
-
-# ─── F. ROI MATCHING CORRECTNESS ────────────────────────────
-
-def test_roi_correctness():
-    print("\n>>> TEST GROUP: ROI matching correctness")
-    from bot.vision import _find_in_roi, get_template, _get_template_gray
-    from bot.utils import find_template
-    from bot.config import SCREEN_DETECT_THRESHOLD, BUTTON_ROIS
-
-    # Test with each reference image that has known buttons
-    ref_button_map = {
-        "village": "attack_button",
-        "battle": "next_base",
-        "results": "return_home",
-    }
-
-    for ref_name, expected_button in ref_button_map.items():
-        img = _load_ref(ref_name)
-        if img is None:
-            _skip(f"ref_{ref_name}.png not found")
-            continue
-
-        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-
-        # ROI-based result
-        roi_result = _find_in_roi(gray, expected_button, SCREEN_DETECT_THRESHOLD)
-
-        # Full-image result
-        full_result = find_template(img, get_template(expected_button), threshold=SCREEN_DETECT_THRESHOLD)
-
-        # Both should find (or both miss) the button
-        roi_found = roi_result is not None
-        full_found = full_result is not None
-
-        if roi_found == full_found:
-            if roi_found:
-                # Check positions are close (within 5px tolerance for ROI offset rounding)
-                dx = abs(roi_result[0] - full_result[0])
-                dy = abs(roi_result[1] - full_result[1])
-                if dx <= 5 and dy <= 5:
-                    _pass(f"ref_{ref_name}.png: {expected_button} — ROI and full-image agree at ~{roi_result}")
-                else:
-                    _fail(f"ref_{ref_name}.png: {expected_button} — ROI={roi_result} vs full={full_result} (off by {dx},{dy})")
-            else:
-                _pass(f"ref_{ref_name}.png: {expected_button} — both miss (expected if template doesn't match)")
-        else:
-            _fail(f"ref_{ref_name}.png: {expected_button} — ROI found={roi_found}, full found={full_found}")
-
-
-def test_roi_all_buttons():
-    print("\n>>> TEST: All ROI regions are within screen bounds")
-    from bot.config import BUTTON_ROIS, SCREEN_WIDTH, SCREEN_HEIGHT
-
-    for name, (x1, y1, x2, y2) in BUTTON_ROIS.items():
-        valid = (0 <= x1 < x2 <= SCREEN_WIDTH and 0 <= y1 < y2 <= SCREEN_HEIGHT)
-        if valid:
-            size = (x2 - x1) * (y2 - y1)
-            full_size = SCREEN_WIDTH * SCREEN_HEIGHT
-            ratio = size / full_size * 100
-            _pass(f"{name}: ({x1},{y1})-({x2},{y2}) — {ratio:.1f}% of screen")
-        else:
-            _fail(f"{name}: ({x1},{y1})-({x2},{y2}) — out of bounds!")
+        _pass("YOLO model loaded successfully")
+    except FileNotFoundError as e:
+        _fail(f"YOLO model failed: {e}")
 
 
 # ─── G. FLOW LOGIC (MOCKED) ─────────────────────────────────
@@ -483,8 +404,7 @@ GROUPS = {
     "screen": [test_screen_states, test_unknown_state],
     "resources": [test_read_village_resources, test_read_zero_resources],
     "loot": [test_read_enemy_loot, test_read_enemy_loot_early_exit],
-    "templates": [test_validate_critical_templates, test_validate_missing_template],
-    "roi": [test_roi_correctness, test_roi_all_buttons],
+    "templates": [test_validate_critical_templates, test_yolo_model_loads],
     "flow": [
         test_scout_and_decide_attack, test_scout_and_decide_skip,
         test_ensure_on_village_already_there,

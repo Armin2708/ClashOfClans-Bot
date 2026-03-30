@@ -55,8 +55,8 @@ def train(
 
     best = Path("runs/coc/weights/best.pt")
     if best.exists():
-        Path("models").mkdir(exist_ok=True)
-        dest = Path("models/coc.pt")
+        Path("data/models").mkdir(exist_ok=True)
+        dest = Path("data/models/coc.pt")
         shutil.copy(best, dest)
         print(f"\nBest weights → {dest}")
     else:

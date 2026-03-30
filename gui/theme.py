@@ -400,6 +400,53 @@ QToolTip {{
     font-size: 12px;
 }}
 
+/* ── Annotation canvas ──────────────────────────────────────── */
+
+QGraphicsView {{
+    background: rgba(0, 0, 0, 0.30);
+    border: 1px solid {border_subtle};
+    border-radius: {r_sm};
+}}
+
+/* ── Box list table ────────────────────────────────────────── */
+
+QTableWidget {{
+    background: {glass_deep};
+    border: 1px solid {border_subtle};
+    border-radius: {r_sm};
+    gridline-color: {border_subtle};
+}}
+
+QTableWidget::item:selected {{
+    background: {accent_light};
+}}
+
+QHeaderView::section {{
+    background: {glass};
+    color: {text2};
+    border: none;
+    border-bottom: 1px solid {border_subtle};
+    padding: 4px 6px;
+    font-size: 11px;
+}}
+
+/* ── Progress bar ──────────────────────────────────────────── */
+
+QProgressBar {{
+    background: {glass_deep};
+    border: 1px solid {border_subtle};
+    border-radius: 6px;
+    text-align: center;
+    color: {text2};
+    height: 18px;
+    font-size: 11px;
+}}
+
+QProgressBar::chunk {{
+    background: {accent};
+    border-radius: 5px;
+}}
+
 """.format(**_T)
 
 

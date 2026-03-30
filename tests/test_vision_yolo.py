@@ -181,9 +181,3 @@ class TestValidateCriticalTemplates:
                 validate_critical_templates()
 
 
-class TestAutoCaptureLegacy:
-    def test_returns_false_noop(self):
-        from bot.vision import auto_capture_template
-        frame = _make_frame()
-        result = auto_capture_template(frame, "next_base")
-        assert result is False

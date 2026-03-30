@@ -63,11 +63,21 @@ def _get_detector():
             return _detector
         from bot.settings import Settings
         settings = Settings()
-        model_path = settings.get("yolo_model_path", "models/coc.pt")
+        model_path = settings.get("yolo_model_path", "data/models/coc.pt")
         confidence = settings.get("yolo_confidence_threshold", 0.45)
         from bot.detector import Detector
         _detector = Detector(model_path, confidence)
     return _detector
+
+
+def reload_detector():
+    """Reset the detector singleton so the next call loads a fresh model.
+
+    Called after training completes to pick up the new weights.
+    """
+    global _detector
+    with _detector_lock:
+        _detector = None
 
 
 # ─── SCREEN STATE DETECTION ───────────────────────────────────
@@ -158,7 +168,7 @@ _DIGIT_TEMPLATES = None
 
 
 def _load_digit_templates():
-    """Load digit templates 0-9 from templates/digits/ as grayscale."""
+    """Load digit templates 0-9 from data/templates/digits/ as grayscale."""
     global _DIGIT_TEMPLATES
     from bot.settings import BASE_WIDTH, BASE_HEIGHT
     rx = SCREEN_WIDTH / BASE_WIDTH
@@ -167,7 +177,7 @@ def _load_digit_templates():
 
     _DIGIT_TEMPLATES = {}
     for d in range(10):
-        t = load_template(f"templates/digits/{d}.png")
+        t = load_template(f"data/templates/digits/{d}.png")
         if t is not None:
             if need_scale:
                 h, w = t.shape[:2]
@@ -287,6 +297,3 @@ def validate_critical_templates():
         ) from e
 
 
-def auto_capture_template(img, button_name):
-    """Legacy no-op: template auto-capture is not needed with YOLO detection."""
-    return False

@@ -13,6 +13,7 @@ from gui.bot_worker import BotWorker
 from gui.panels.control_panel import DashboardPanel
 from gui.panels.settings_panel import SettingsPanel
 from gui.panels.log_panel import LogPanel
+from gui.panels.labeling_panel import LabelingPanel
 from gui.onboarding import OnboardingWidget
 from bot.settings import Settings
 from bot.updater import UpdateChecker
@@ -41,7 +42,7 @@ class MainWindow(QMainWindow):
         self._settings = Settings()
 
         self.setWindowTitle("Clash of Clans Bot")
-        self.setMinimumSize(820, 540)
+        self.setMinimumSize(1100, 700)
 
         # Gradient background
         central = _GradientBackground()
@@ -78,6 +79,9 @@ class MainWindow(QMainWindow):
         self.log_panel = LogPanel()
         self.tabs.addTab(self.log_panel, "Log")
 
+        self.labeling_panel = LabelingPanel()
+        self.tabs.addTab(self.labeling_panel, "Label & Train")
+
         main_layout.addWidget(self.tabs, stretch=1)
         self._stack.addWidget(self._main_widget)
 
@@ -112,8 +116,8 @@ class MainWindow(QMainWindow):
         if not screen:
             return
         avail = screen.availableGeometry()
-        w = min(900, avail.width())
-        h = min(650, avail.height())
+        w = min(1200, avail.width())
+        h = min(800, avail.height())
         self.resize(w, h)
         x = avail.x() + (avail.width() - w) // 2
         y = avail.y() + (avail.height() - h) // 2

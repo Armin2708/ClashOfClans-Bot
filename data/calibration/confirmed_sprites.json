@@ -1,0 +1,160 @@
+{
+  "hero_hall": "all",
+  "eagle_artillery": "all",
+  "x_bow": "all",
+  "wizard_tower": "all",
+  "super_wizard_tower": "all",
+  "ricochet_cannon": "all",
+  "revenge_tower": "all",
+  "pet_house": "all",
+  "multi_archer_tower": "all",
+  "clan_castle": "all",
+  "giga_bomb": "all",
+  "builder_hut": "all",
+  "air_sweeper": "all",
+  "spring_trap": "all",
+  "tornado_trap": "all",
+  "skeleton_trap": "all",
+  "air_bomb_trap": "all",
+  "hidden_tesla": "all",
+  "spell_tower": "all",
+  "archer_tower_geared": "all",
+  "blacksmith": "all",
+  "dark_barracks": "all",
+  "town_hall": "all",
+  "air_defense": [
+    12,
+    13,
+    14,
+    15,
+    16
+  ],
+  "archer_tower": [
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21
+  ],
+  "cannon": [
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21
+  ],
+  "cannon_geared": [
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21
+  ],
+  "dark_elixir_storage": [
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13
+  ],
+  "elixir_storage": [
+    12,
+    13,
+    14,
+    15,
+    16,
+    18,
+    19
+  ],
+  "gold_storage": [
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19
+  ],
+  "spell_factory": [
+    4,
+    5,
+    6,
+    7,
+    8,
+    9
+  ],
+  "barracks": [
+    5,
+    6,
+    7,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17
+  ],
+  "giant_bomb": [
+    9
+  ],
+  "wall": [
+    16,
+    17,
+    18,
+    19
+  ],
+  "seeking_air_mine": [
+    3,
+    4,
+    5,
+    6,
+    7
+  ],
+  "bomb_trap": [
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13
+  ],
+  "multi_gear_tower": [
+    3
+  ],
+  "multi_gear_tower_longrange": [
+    3
+  ],
+  "hero_banners": [
+    "hero_banner_aq",
+    "hero_banner_bk",
+    "hero_banner_dd",
+    "hero_banner_gw",
+    "hero_banner_mp"
+  ]
+}

@@ -1,0 +1,37 @@
+[
+  {
+    "btype": "bomb_trap",
+    "tx": 19,
+    "ty": 16,
+    "sprite_name": "bomb_trap_13",
+    "scale_override": null
+  },
+  {
+    "btype": "bomb_trap",
+    "tx": 23,
+    "ty": 16,
+    "sprite_name": "bomb_trap_13",
+    "scale_override": null
+  },
+  {
+    "btype": "bomb_trap",
+    "tx": 29,
+    "ty": 25,
+    "sprite_name": "bomb_trap_13",
+    "scale_override": null
+  },
+  {
+    "btype": "bomb_trap",
+    "tx": 18,
+    "ty": 23,
+    "sprite_name": "bomb_trap_13",
+    "scale_override": null
+  },
+  {
+    "btype": "bomb_trap",
+    "tx": 27,
+    "ty": 14,
+    "sprite_name": "bomb_trap_13",
+    "scale_override": 0.2
+  }
+]

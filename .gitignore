@@ -15,6 +15,7 @@ env/
 
 # OS
 .DS_Store
+._*
 Thumbs.db
 
 # Debug & test output images
@@ -36,22 +37,25 @@ bot.log
 *.so
 *.dylib
 
-# PyInstaller build artifacts
-build/
+# PyInstaller build output (not build/ config files)
 dist/
-tools/
 *.dmg
 *.spec.bak
+
+# Superpowers (IDE brainstorm sessions)
 .superpowers/
 
 # Generated at build time by ClashOfClansBot.spec
 bot/_version.py
 
 # YOLO model weights (large binaries — download/train locally)
-models/*.pt
+data/models/*.pt
 
 # Training datasets (downloaded/generated — do not commit)
 datasets/
 
 # Ultralytics training run outputs
 runs/
+
+# Large generated assets
+Gemini_Generated_Image_*.png
